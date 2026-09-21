@@ -910,9 +910,8 @@
     </div>
 
     <div class="nav-tabs">
-      <button class="nav-tab-btn active" onclick="switchMainView('calc')">⚡ Калькулятор</button>
-      <button class="nav-tab-btn" onclick="switchMainView('database')">📋 База всіх 79 виробів</button>
-      <button class="nav-tab-btn" onclick="switchMainView('a3price')">📊 Прайс А3 sborka.ua</button>
+      <button class="nav-tab-btn active" onclick="switchMainView('calc', this)">⚡ Калькулятор</button>
+      <button class="nav-tab-btn" onclick="switchMainView('database', this)">📋 База всіх 79 виробів</button>
     </div>
 
     <div class="topbar-right">
@@ -1435,7 +1434,6 @@
     };
 
     const productsCatalog = [
-    # 1. Поліграфія (Business & Cards)
     {
         "id": "business-card-standard", "name": "Візитка стандарт (90×50)", "category": "polygraphy", "icon": "💳",
         "desc": "Класична ділова візитка на щільному картоні 350 г/м² з ідеальною геометрією різу.",
@@ -1458,19 +1456,19 @@
         "id": "business-card-rounded", "name": "Візитка зі скругленими кутами", "category": "polygraphy", "icon": "🔄",
         "desc": "Скруглені 4 кути (радіус 3 або 5 мм) проти загинання в кишені.",
         "defaultW": 90, "defaultH": 50, "defaultPaper": "coated_350", "allowedPapers": ["coated_350", "coated_300"],
-        "defaultColor": "4+4", "defaultCorners": True, "minQty": 100, "priceFrom": "0,95"
+        "defaultColor": "4+4", "defaultCorners"": true, "minQty": 100, "priceFrom": "0,95"
     },
     {
         "id": "business-card-double-fold", "name": "Візитка подвійна зі згином", "category": "polygraphy", "icon": "📖",
         "desc": "Розмір 180×50 мм складається до 90×50 мм, 4 робочі сторони з біговкою.",
         "defaultW": 180, "defaultH": 50, "defaultPaper": "coated_350", "allowedPapers": ["coated_350", "coated_300"],
-        "defaultColor": "4+4", "defaultScoring": True, "minQty": 100, "priceFrom": "1,25"
+        "defaultColor": "4+4", "defaultScoring"": true, "minQty": 100, "priceFrom": "1,25"
     },
     {
         "id": "business-card-vertical-fold", "name": "Візитка-книжечка вертикальна", "category": "polygraphy", "icon": "📑",
         "desc": "Розгортка 90×100 мм з біговкою, складається вертикально до 90×50 мм.",
         "defaultW": 90, "defaultH": 100, "defaultPaper": "coated_350", "allowedPapers": ["coated_350", "coated_300"],
-        "defaultColor": "4+4", "defaultScoring": True, "minQty": 100, "priceFrom": "1,25"
+        "defaultColor": "4+4", "defaultScoring"": true, "minQty": 100, "priceFrom": "1,25"
     },
     {
         "id": "business-card-kraft", "name": "Візитка Еко-Крафт (200 г/м²)", "category": "polygraphy", "icon": "🌿",
@@ -1494,19 +1492,19 @@
         "id": "tag-clothing", "name": "Бірка навісна для одягу", "category": "polygraphy", "icon": "🏷️",
         "desc": "Розмір 50×90 мм на 350 г/м² зі свердлінням отвору 4 мм під нитку або пломбу.",
         "defaultW": 50, "defaultH": 90, "defaultPaper": "coated_350", "allowedPapers": ["coated_350", "kraft_200", "design_300"],
-        "defaultColor": "4+4", "defaultHole": True, "minQty": 100, "priceFrom": "0,75"
+        "defaultColor": "4+4", "defaultHole"": true, "minQty": 100, "priceFrom": "0,75"
     },
     {
         "id": "tag-rounded-hole", "name": "Бірка кругла з отвором (Ø50 мм)", "category": "polygraphy", "icon": "🔘",
         "desc": "Кругла плотерна висічка діаметром 50 мм з отвором 3-5 мм по центру краю.",
         "defaultW": 50, "defaultH": 50, "defaultPaper": "coated_350", "allowedPapers": ["coated_350"],
-        "defaultColor": "4+4", "defaultPlotter": True, "defaultHole": True, "minQty": 100, "priceFrom": "1,15"
+        "defaultColor": "4+4", "defaultPlotter"": true, "defaultHole"": true, "minQty": 100, "priceFrom": "1,15"
     },
     {
         "id": "tag-jewelry-mini", "name": "Ювелірна бірка міні (40×20)", "category": "polygraphy", "icon": "💍",
         "desc": "Мініатюрний ярлик 40×20 мм зі свердлінням отвору 2 мм для пломбування прикрас.",
         "defaultW": 40, "defaultH": 20, "defaultPaper": "coated_350", "allowedPapers": ["coated_350"],
-        "defaultColor": "4+0", "defaultHole": True, "minQty": 200, "priceFrom": "0,35"
+        "defaultColor": "4+0", "defaultHole"": true, "minQty": 200, "priceFrom": "0,35"
     },
     {
         "id": "price-tag-retail", "name": "Цінник акційний вітринний (70×100)", "category": "polygraphy", "icon": "🏷️",
@@ -1515,7 +1513,6 @@
         "defaultColor": "4+0", "minQty": 100, "priceFrom": "0,55"
     },
 
-    # 2. Реклама (Flyers, Promos, POS)
     {
         "id": "flyer-euro", "name": "Єврофлаєр (99×210)", "category": "advertising", "icon": "📄",
         "desc": "Лідер промо-поліграфії: 6 штук на 1 аркуші А3, двосторонній повноколір.",
@@ -1556,46 +1553,45 @@
         "id": "coupon-perforated", "name": "Купон зі знижкою та перфорацією", "category": "advertising", "icon": "🎫",
         "desc": "Розмір 70×140 мм з пунктирною лінією легкого відриву для корінця знижки.",
         "defaultW": 70, "defaultH": 140, "defaultPaper": "coated_150", "allowedPapers": ["coated_130", "coated_150", "coated_200"],
-        "defaultColor": "4+4", "defaultPerforation": True, "minQty": 100, "priceFrom": "0,75"
+        "defaultColor": "4+4", "defaultPerforation"": true, "minQty": 100, "priceFrom": "0,75"
     },
     {
         "id": "ticket-numbered", "name": "Вхідний квиток з контролем (50×150)", "category": "advertising", "icon": "🎟️",
         "desc": "Квиток для концертів, клубів та конференцій з відривним полем перевірки.",
         "defaultW": 50, "defaultH": 150, "defaultPaper": "coated_150", "allowedPapers": ["coated_150", "coated_200"],
-        "defaultColor": "4+0", "defaultPerforation": True, "minQty": 100, "priceFrom": "0,60"
+        "defaultColor": "4+0", "defaultPerforation"": true, "minQty": 100, "priceFrom": "0,60"
     },
     {
         "id": "doorhanger-hotel", "name": "Дорхенгер на дверну ручку", "category": "advertising", "icon": "🚪",
         "desc": "Підвіс 90×200 мм з круглим гачком для готелів, ЖК та адресної доставки.",
         "defaultW": 90, "defaultH": 200, "defaultPaper": "coated_300", "allowedPapers": ["coated_300", "coated_350"],
-        "defaultColor": "4+4", "defaultPlotter": True, "minQty": 100, "priceFrom": "1,65"
+        "defaultColor": "4+4", "defaultPlotter"": true, "minQty": 100, "priceFrom": "1,65"
     },
     {
         "id": "neckhanger-bottle", "name": "Некхенгер на шийку пляшки (60×140)", "category": "advertising", "icon": "🍾",
         "desc": "Підвісна картка з отвором 35 мм для вин, оливкової олії та преміум напоїв.",
         "defaultW": 60, "defaultH": 140, "defaultPaper": "coated_300", "allowedPapers": ["coated_300", "coated_350"],
-        "defaultColor": "4+0", "defaultPlotter": True, "minQty": 100, "priceFrom": "1,35"
+        "defaultColor": "4+0", "defaultPlotter"": true, "minQty": 100, "priceFrom": "1,35"
     },
     {
         "id": "wobbler-promo", "name": "Воблер рекламний (100×100)", "category": "advertising", "icon": "🎯",
         "desc": "Реклама на гнучкій ніжці, що тремтить від повітря біля товару на полиці.",
         "defaultW": 100, "defaultH": 100, "defaultPaper": "coated_300", "allowedPapers": ["coated_300", "coated_350"],
-        "defaultColor": "4+0", "defaultPlotter": True, "minQty": 50, "priceFrom": "1,85"
+        "defaultColor": "4+0", "defaultPlotter"": true, "minQty": 50, "priceFrom": "1,85"
     },
     {
         "id": "shelftalker", "name": "Шелфтокер вітринний (200×60)", "category": "advertising", "icon": "📐",
         "desc": "Поличковий рекламний бортик з біговкою під край торгового стелажу.",
         "defaultW": 200, "defaultH": 60, "defaultPaper": "coated_300", "allowedPapers": ["coated_250", "coated_300"],
-        "defaultColor": "4+0", "defaultScoring": True, "minQty": 50, "priceFrom": "1,45"
+        "defaultColor": "4+0", "defaultScoring"": true, "minQty": 50, "priceFrom": "1,45"
     },
     {
         "id": "table-tent-a5", "name": "Тейбл-тент тригранний (будиночок)", "category": "advertising", "icon": "⛺",
         "desc": "Настільна табличка 100×210 мм з 3 біговками для стійок адміністратора та барів.",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "coated_300", "allowedPapers": ["coated_300", "coated_350"],
-        "defaultColor": "4+0", "defaultScoring": True, "minQty": 25, "priceFrom": "7,50"
+        "defaultColor": "4+0", "defaultScoring"": true, "minQty": 25, "priceFrom": "7,50"
     },
 
-    # 3. Наклейки та етикетки (Stickers & Labels)
     {
         "id": "sticker-a6", "name": "Наклейка прямокутна А6 (105×148)", "category": "stickers", "icon": "🏷️",
         "desc": "Самоклейка Raflatac з насічками для легкого відділення від підкладки.",
@@ -1618,25 +1614,25 @@
         "id": "sticker-round-plotter", "name": "Наклейка кругла з контурною різкою (Ø50)", "category": "stickers", "icon": "🟡",
         "desc": "Високоточна плотерна порізка до підкладки за круглим вектором будь-якого діаметра.",
         "defaultW": 50, "defaultH": 50, "defaultPaper": "selfadhesive_vinyl", "allowedPapers": ["selfadhesive_paper", "selfadhesive_vinyl"],
-        "defaultColor": "4+0", "defaultPlotter": True, "minQty": 100, "priceFrom": "0,75"
+        "defaultColor": "4+0", "defaultPlotter"": true, "minQty": 100, "priceFrom": "0,75"
     },
     {
         "id": "sticker-coffee-cup", "name": "Наклейка на стаканчик для кави (Ø45)", "category": "stickers", "icon": "☕",
         "desc": "Кругла вологостійка наклейка на одноразові крафтові стакани.",
         "defaultW": 45, "defaultH": 45, "defaultPaper": "selfadhesive_vinyl", "allowedPapers": ["selfadhesive_paper", "selfadhesive_vinyl"],
-        "defaultColor": "4+0", "defaultPlotter": True, "minQty": 100, "priceFrom": "0,68"
+        "defaultColor": "4+0", "defaultPlotter"": true, "minQty": 100, "priceFrom": "0,68"
     },
     {
         "id": "stickerpack-a5", "name": "Стікерпак А5 з контурною висічкою", "category": "stickers", "icon": "🎨",
         "desc": "Аркуш А5 з набором фігурних стікерів на вологостійкій білій вініловій плівці.",
         "defaultW": 148, "defaultH": 210, "defaultPaper": "selfadhesive_vinyl", "allowedPapers": ["selfadhesive_vinyl"],
-        "defaultColor": "4+0", "defaultPlotter": True, "minQty": 25, "priceFrom": "8,50"
+        "defaultColor": "4+0", "defaultPlotter"": true, "minQty": 25, "priceFrom": "8,50"
     },
     {
         "id": "stickerpack-a4", "name": "Стікерпак А4 великий", "category": "stickers", "icon": "🖼️",
         "desc": "Повноформатний набір брендових або фанових стікерів з плотерною висічкою.",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "selfadhesive_vinyl", "allowedPapers": ["selfadhesive_vinyl"],
-        "defaultColor": "4+0", "defaultPlotter": True, "minQty": 20, "priceFrom": "16,50"
+        "defaultColor": "4+0", "defaultPlotter"": true, "minQty": 20, "priceFrom": "16,50"
     },
     {
         "id": "bottle-label-wine", "name": "Етикетка для пляшок вина / соусів (90×120)", "category": "stickers", "icon": "🍾",
@@ -1669,7 +1665,6 @@
         "defaultColor": "1+0", "minQty": 200, "priceFrom": "0,25"
     },
 
-    # 4. Плакати та постери (Posters)
     {
         "id": "poster-a3", "name": "Плакат А3 (297×420)", "category": "posters", "icon": "🖼️",
         "desc": "Базовий формат нашої цифрової машини: друк 1 до 1 на 170 г/м² з ідеальною насиченістю.",
@@ -1707,57 +1702,55 @@
         "defaultColor": "4+0", "minQty": 25, "priceFrom": "8,20"
     },
 
-    # 5. Буклети та брошури (Booklets & Multipage)
     {
         "id": "booklet-1fold-a4", "name": "Буклет 1 згин (А4 -> А5)", "category": "booklets", "icon": "📘",
         "desc": "Розгортка А4 (297×210 мм), 1 біговка по лінії згину, 4 повноколірні сторінки.",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "coated_150", "allowedPapers": ["coated_130", "coated_150", "coated_170"],
-        "defaultColor": "4+4", "defaultScoring": True, "minQty": 50, "priceFrom": "4,20"
+        "defaultColor": "4+4", "defaultScoring"": true, "minQty": 50, "priceFrom": "4,20"
     },
     {
         "id": "eurobooklet-2fold", "name": "Євробуклет 2 згини (ліфлет)", "category": "booklets", "icon": "📖",
         "desc": "Аркуш 297×210 мм, 2 паралельні біговки до формату 99×210 мм (гармошка / намотка).",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "coated_130", "allowedPapers": ["coated_130", "coated_150"],
-        "defaultColor": "4+4", "defaultScoring": True, "minQty": 50, "priceFrom": "4,50"
+        "defaultColor": "4+4", "defaultScoring"": true, "minQty": 50, "priceFrom": "4,50"
     },
     {
         "id": "booklet-accordion-3fold", "name": "Буклет-гармошка 3 згини (4 секції)", "category": "booklets", "icon": "📂",
         "desc": "Довгий інформаційний буклет 396×210 мм, що складається у 4 стулки 99×210 мм.",
         "defaultW": 210, "defaultH": 396, "defaultPaper": "coated_150", "allowedPapers": ["coated_130", "coated_150"],
-        "defaultColor": "4+4", "defaultScoring": True, "minQty": 50, "priceFrom": "6,80"
+        "defaultColor": "4+4", "defaultScoring"": true, "minQty": 50, "priceFrom": "6,80"
     },
     {
         "id": "brochure-a5-staple", "name": "Брошура А5 на 2 скоби (8 стор.)", "category": "booklets", "icon": "📚",
         "desc": "Компактний каталог або інструкція на 2 металеві скоби, 8 кольорових сторінок.",
         "defaultW": 148, "defaultH": 210, "defaultPaper": "coated_150", "allowedPapers": ["coated_130", "coated_150"],
-        "defaultColor": "4+4", "defaultStaples": True, "minQty": 25, "priceFrom": "14,00"
+        "defaultColor": "4+4", "defaultStaples"": true, "minQty": 25, "priceFrom": "14,00"
     },
     {
         "id": "brochure-a4-staple", "name": "Брошура А4 на 2 скоби (12 стор.)", "category": "booklets", "icon": "📑",
         "desc": "Презентаційний корпоративний звіт або каталог товарів у повному форматі А4.",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "coated_150", "allowedPapers": ["coated_150", "coated_170"],
-        "defaultColor": "4+4", "defaultStaples": True, "minQty": 25, "priceFrom": "26,00"
+        "defaultColor": "4+4", "defaultStaples"": true, "minQty": 25, "priceFrom": "26,00"
     },
     {
         "id": "catalog-multipage", "name": "Каталог продукції 16 стор. А4", "category": "booklets", "icon": "📕",
         "desc": "Повноцінний виробничий каталог товарів з цінами та технічними характеристиками.",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "coated_150", "allowedPapers": ["coated_130", "coated_150"],
-        "defaultColor": "4+4", "defaultStaples": True, "minQty": 25, "priceFrom": "34,00"
+        "defaultColor": "4+4", "defaultStaples"": true, "minQty": 25, "priceFrom": "34,00"
     },
     {
         "id": "catalog-a5-spring-40p", "name": "Каталог А5 на металевій пружині (40 стор.)", "category": "booklets", "icon": "📒",
         "desc": "Зручний гортальний альбом на міцній білій або чорній пружині з обкладинкою 300г.",
         "defaultW": 148, "defaultH": 210, "defaultPaper": "coated_150", "allowedPapers": ["coated_130", "coated_150"],
-        "defaultColor": "4+4", "defaultSpring": True, "minQty": 10, "priceFrom": "68,00"
+        "defaultColor": "4+4", "defaultSpring"": true, "minQty": 10, "priceFrom": "68,00"
     },
     {
         "id": "user-manual-fold", "name": "Інструкція користувача гармошкою (А4)", "category": "booklets", "icon": "📝",
         "desc": "Економічна інструкція 1+1 на 80г офсетному папері з машинним фальцюванням.",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "offset_80", "allowedPapers": ["offset_80", "coated_115"],
-        "defaultColor": "1+1", "defaultScoring": True, "minQty": 100, "priceFrom": "1,45"
+        "defaultColor": "1+1", "defaultScoring"": true, "minQty": 100, "priceFrom": "1,45"
     },
 
-    # 6. Офіс та корпоративна поліграфія (Office)
     {
         "id": "certificate-a4", "name": "Сертифікат А4 (210×297)", "category": "office", "icon": "🏆",
         "desc": "Офіційний нагородний документ або кваліфікаційний диплом на картоні 300 г/м².",
@@ -1780,19 +1773,19 @@
         "id": "presentation-spring", "name": "Презентація на пружину А4", "category": "office", "icon": "📊",
         "desc": "Зшивка на металеву пружину з прозорою пластиковою обкладинкою та цупким зворотом.",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "coated_170", "allowedPapers": ["coated_150", "coated_170", "offset_80"],
-        "defaultColor": "4+0", "defaultSpring": True, "minQty": 10, "priceFrom": "45,00"
+        "defaultColor": "4+0", "defaultSpring"": true, "minQty": 10, "priceFrom": "45,00"
     },
     {
         "id": "notebook-spring-a5", "name": "Блокнот на пружині А5 (50 арк.)", "category": "office", "icon": "📓",
         "desc": "Брендована обкладинка 300 г/м² + внутрішній блок 50 аркушів у клітинку/лінію на пружині.",
         "defaultW": 148, "defaultH": 210, "defaultPaper": "coated_300", "allowedPapers": ["coated_300"],
-        "defaultColor": "4+0", "defaultSpring": True, "minQty": 25, "priceFrom": "55,00"
+        "defaultColor": "4+0", "defaultSpring"": true, "minQty": 25, "priceFrom": "55,00"
     },
     {
         "id": "notebook-spring-a6", "name": "Блокнот кишеньковий А6 на пружині", "category": "office", "icon": "📔",
         "desc": "Компактний нотатник для конференцій та тренінгів зі зручною верхньою спіраллю.",
         "defaultW": 105, "defaultH": 148, "defaultPaper": "coated_300", "allowedPapers": ["coated_300"],
-        "defaultColor": "4+0", "defaultSpring": True, "minQty": 25, "priceFrom": "38,00"
+        "defaultColor": "4+0", "defaultSpring"": true, "minQty": 25, "priceFrom": "38,00"
     },
     {
         "id": "memo-cube-pad", "name": "Кубарик для записів (90×90)", "category": "office", "icon": "🧊",
@@ -1816,16 +1809,15 @@
         "id": "badge-conference", "name": "Бейдж для конференцій (85×120)", "category": "office", "icon": "🪪",
         "desc": "Персоналізована картка з матовою ламінацією та овальним отвором під карабін ланцюжка.",
         "defaultW": 85, "defaultH": 120, "defaultPaper": "coated_300", "allowedPapers": ["coated_300", "coated_350"],
-        "defaultColor": "4+4", "defaultLam": "matte_11", "defaultHole": True, "minQty": 50, "priceFrom": "2,20"
+        "defaultColor": "4+4", "defaultLam": "matte_11", "defaultHole"": true, "minQty": 50, "priceFrom": "2,20"
     },
     {
         "id": "corporate-folder-a4", "name": "Папка фірмова висічна під А4", "category": "office", "icon": "📁",
         "desc": "Картонна папка 350 г/м² з кишенею для документів та прорізами під візитку.",
         "defaultW": 297, "defaultH": 420, "defaultPaper": "coated_350", "allowedPapers": ["coated_350"],
-        "defaultColor": "4+0", "defaultLam": "matte_10", "defaultPlotter": True, "minQty": 25, "priceFrom": "24,00"
+        "defaultColor": "4+0", "defaultLam": "matte_10", "defaultPlotter"": true, "minQty": 25, "priceFrom": "24,00"
     },
 
-    # 7. HoReCa та ресторанне меню (HoReCa)
     {
         "id": "menu-a4-laminated", "name": "Меню для ресторану А4 (ламіноване)", "category": "office", "icon": "🍽️",
         "desc": "Повноколірне меню з щільною двосторонньою матовою ламінацією 30 мкм проти плям та вологи.",
@@ -1842,7 +1834,7 @@
         "id": "menu-booklet-fold", "name": "Меню-буклет зі згином (А3 -> А4)", "category": "office", "icon": "📋",
         "desc": "Аркуш А3 з біговкою по центру складається у 4 смуги формату А4 з ламінацією.",
         "defaultW": 297, "defaultH": 420, "defaultPaper": "coated_300", "allowedPapers": ["coated_250", "coated_300"],
-        "defaultColor": "4+4", "defaultScoring": True, "minQty": 10, "priceFrom": "18,00"
+        "defaultColor": "4+4", "defaultScoring"": true, "minQty": 10, "priceFrom": "18,00"
     },
     {
         "id": "wine-list-narrow", "name": "Винна / барна карта вузька (105×297)", "category": "office", "icon": "🍷",
@@ -1854,10 +1846,9 @@
         "id": "coaster-beermat", "name": "Костер / бірдекель під келих (90×90)", "category": "office", "icon": "🍺",
         "desc": "Квадратний або круглий підсклянник 90×90 мм на поглинаючому картонному матеріалі.",
         "defaultW": 90, "defaultH": 90, "defaultPaper": "coated_350", "allowedPapers": ["coated_350", "kraft_200"],
-        "defaultColor": "4+4", "defaultCorners": True, "minQty": 100, "priceFrom": "1,40"
+        "defaultColor": "4+4", "defaultCorners"": true, "minQty": 100, "priceFrom": "1,40"
     },
 
-    # 8. Подарункова продукція та свята (Gifts & Souvenirs)
     {
         "id": "postcard-a6", "name": "Листівка поштова А6 (105×148)", "category": "gifts", "icon": "✉️",
         "desc": "Класична поштівка з авторською ілюстрацією на цупкому картоні 300 г/м².",
@@ -1874,7 +1865,7 @@
         "id": "postcard-folded", "name": "Листівка подвійна з біговкою (210×198)", "category": "gifts", "icon": "📖",
         "desc": "Складається навпіл до євро-формату 99×210 мм, зручно вкладається у конверт.",
         "defaultW": 198, "defaultH": 210, "defaultPaper": "coated_300", "allowedPapers": ["coated_250", "coated_300"],
-        "defaultColor": "4+4", "defaultScoring": True, "minQty": 50, "priceFrom": "3,20"
+        "defaultColor": "4+4", "defaultScoring"": true, "minQty": 50, "priceFrom": "3,20"
     },
     {
         "id": "postcard-square", "name": "Листівка квадратна (140×140)", "category": "gifts", "icon": "🔲",
@@ -1898,19 +1889,19 @@
         "id": "calendar-pocket", "name": "Календар кишеньковий (70×100)", "category": "gifts", "icon": "📅",
         "desc": "Двостороння ламінація, скруглені 4 кути — надійний рекламний носій на весь рік.",
         "defaultW": 70, "defaultH": 100, "defaultPaper": "coated_350", "allowedPapers": ["coated_350"],
-        "defaultColor": "4+4", "defaultLam": "gloss_11", "defaultCorners": True, "minQty": 100, "priceFrom": "1,20"
+        "defaultColor": "4+4", "defaultLam": "gloss_11", "defaultCorners"": true, "minQty": 100, "priceFrom": "1,20"
     },
     {
         "id": "calendar-tent", "name": "Календар-будиночок настільний (210×100)", "category": "gifts", "icon": "🗓️",
         "desc": "Стійка трикутна конструкція з 3 біговками, що прикрашає робочий стіл клієнта 365 днів.",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "coated_300", "allowedPapers": ["coated_300", "coated_350"],
-        "defaultColor": "4+0", "defaultScoring": True, "minQty": 25, "priceFrom": "7,80"
+        "defaultColor": "4+0", "defaultScoring"": true, "minQty": 25, "priceFrom": "7,80"
     },
     {
         "id": "calendar-wall-a4", "name": "Календар перекидний настінний А4", "category": "gifts", "icon": "📆",
         "desc": "13 перекидних аркушів, пружина по короткій стороні з ригелем (гачком для цвяха).",
         "defaultW": 210, "defaultH": 297, "defaultPaper": "coated_170", "allowedPapers": ["coated_150", "coated_170", "coated_200"],
-        "defaultColor": "4+0", "defaultSpring": True, "minQty": 10, "priceFrom": "65,00"
+        "defaultColor": "4+0", "defaultSpring"": true, "minQty": 10, "priceFrom": "65,00"
     },
     {
         "id": "desk-planning-mat-a3", "name": "Настільний планінг А3 (відривний блок)", "category": "gifts", "icon": "🗓️",
@@ -1922,7 +1913,7 @@
         "id": "bookmark-with-eyelet", "name": "Закладка для книг з отвором (50×180)", "category": "gifts", "icon": "🔖",
         "desc": "Цупка закладка 350 г/м² з матовою ламінацією та отвором під атласну стрічку.",
         "defaultW": 50, "defaultH": 180, "defaultPaper": "coated_350", "allowedPapers": ["coated_350", "design_300"],
-        "defaultColor": "4+4", "defaultLam": "matte_11", "defaultHole": True, "minQty": 50, "priceFrom": "1,85"
+        "defaultColor": "4+4", "defaultLam": "matte_11", "defaultHole"": true, "minQty": 50, "priceFrom": "1,85"
     }
 ];
 
@@ -2342,9 +2333,18 @@
     }
 
     // --- View Switcher ---
-    function switchMainView(viewId) {
+    function switchMainView(viewId, btnEl) {
       document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
+      if (btnEl) {
+        btnEl.classList.add('active');
+      } else {
+        // fallback: find the matching button by onclick attribute content
+        document.querySelectorAll('.nav-tab-btn').forEach(b => {
+          if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${viewId}'`)) {
+            b.classList.add('active');
+          }
+        });
+      }
 
       document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active-view'));
       if (viewId === 'calc') document.getElementById('viewCalc').classList.add('active-view');
@@ -2390,9 +2390,7 @@
       const p = productsCatalog.find(x => x.id === id);
       if (p) {
         selectProduct(p);
-        switchMainView('calc');
-        document.querySelectorAll('.nav-tab-btn')[0].classList.add('active');
-        document.querySelectorAll('.nav-tab-btn')[1].classList.remove('active');
+        switchMainView('calc', null);
       }
     }
 
