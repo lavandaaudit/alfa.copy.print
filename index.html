@@ -1905,6 +1905,12 @@
             <div class="merch-note" id="merchNoteBox"></div>
           </div>
 
+          <!-- 2s. Простий товар: щаблі ціни -->
+          <div class="control-row" id="simpleControlWrap" style="display:none;">
+            <div class="control-label"><span>2. Ціна за тираж</span></div>
+            <div class="merch-note" id="simpleNoteBox"></div>
+          </div>
+
           <!-- 2p. Пакунок: склад -->
           <div class="control-row" id="packageControlWrap" style="display:none;">
             <div class="control-label"><span>2. Склад пакунка — редагуйте вільно</span><span id="pkgCountLabel"></span></div>
@@ -3277,16 +3283,66 @@
     const PRODUCT_NUMBERS = {};
     productsCatalog.forEach((p, i) => { PRODUCT_NUMBERS[p.id] = i + 1; });
     const TOTAL_PRODUCTS = productsCatalog.length;
+
+    /* TASK 22: АДМІНКА — оверрайд цін/виробів із catalog-override.js.
+       Файл генерує admin.html («Опублікувати»). Порядок дій:
+       1) <script src="catalog-override.js"> поруч з index.html (синхронно, до init)
+       2) якщо локального немає — тягнемо з GitHub Pages (ADMIN_OVERRIDE_URL)
+       3) застосовуємо ДО DOMContentLoaded → калькулятор/база одразу з новими цінами */
+    const ADMIN_OVERRIDE_URL = 'https://lavandaaudit.github.io/alfa_admin/catalog-override.js'; // за потреби замініть URL
+    window.applyCatalogOverride = function (ov) {
+      try {
+        if (!ov || typeof ov !== 'object') return;
+        const pr = ov.prices;
+        if (pr) {
+          if (pr.blockSetup != null) prices.blockSetup = Number(pr.blockSetup) || 0;
+          if (pr.prepress) Object.assign(prices.prepress, pr.prepress);
+          if (pr.sheet) Object.assign(prices.sheet, pr.sheet);
+          ['printTiers', 'paper', 'lamination', 'finishing'].forEach(function (k) {
+            const src = pr[k];
+            if (!src) return;
+            Object.keys(src).forEach(function (key) { prices[k][key] = src[key]; });
+          });
+          Object.keys(prices.printTiers).forEach(function (c) {
+            prices.printTiers[c].sort(function (a, b) { return (a.max == null ? 1e9 : a.max) - (b.max == null ? 1e9 : b.max); });
+          });
+        }
+        if (Array.isArray(ov.categories) && ov.categories.length) {
+          // Категорії/підкатегорії з адмінки: заміна наявних + додавання нових НА МІСЦІ,
+          // щоб CATEGORY_META/CATEGORY_KEYS (посилання на той самий масив) оновились всюди.
+          ov.categories.forEach(function (c) {
+            if (!c || !c.key) return;
+            const meta = { key: c.key, label: c.label || c.key, short: c.short || c.label || c.key, icon: c.icon || '', desc: c.desc || '', subs: Array.isArray(c.subs) ? c.subs : [], color: c.color };
+            const i = CATEGORY_META.findIndex(function (x) { return x.key === c.key; });
+            if (i >= 0) CATEGORY_META[i] = meta; else CATEGORY_META.push(meta);
+          });
+          CATEGORY_KEYS.length = 0;
+          CATEGORY_META.forEach(function (c) { CATEGORY_KEYS.push(c.key); });
+        }
+        if (Array.isArray(ov.products)) {
+          ov.products.forEach(function (p) {
+            if (!p || !p.id || !p.name) return;
+            const i = productsCatalog.findIndex(function (x) { return x.id === p.id; });
+            if (i >= 0) productsCatalog[i] = p; else productsCatalog.push(p);
+          });
+          for (const k in PRODUCT_NUMBERS) delete PRODUCT_NUMBERS[k];
+          productsCatalog.forEach(function (p, i) { PRODUCT_NUMBERS[p.id] = i + 1; });
+        }
+        console.info('[admin] застосовано catalog-override від', ov.updatedAt || '?');
+      } catch (e) { console.warn('[admin] override помилка:', e); }
+    };
     function productNo(p) { const n = PRODUCT_NUMBERS[p.id]; return n ? '№' + String(n).padStart(3, '0') : '—'; }
     function productCodeOf(p) { if (!p) return 'AM-CUSTOM'; const n = PRODUCT_NUMBERS[p.id]; return n ? 'AM-' + String(n).padStart(3, '0') : 'AM-CUSTOM'; }
     function productSubLine(p) {
       if (p.kind === 'package') return (p.contents || []).length + ' позицій • економія ~10%';
       if (p.kind === 'merch') return 'від ' + p.minQty + ' шт • ' + (p.applyMethod || 'друк лого');
+      if (p.kind === 'simple') return 'від ' + p.minQty + ' шт • ' + (p.priceFrom || (p.tiers && p.tiers[0] ? p.tiers[0].price : 0)) + ' ₴/шт' + (p.subcategory ? ' • ' + p.subcategory : '');
       return p.defaultW + '×' + p.defaultH + ' мм • від ' + p.minQty + ' шт';
     }
     function productPriceTag(p) {
       if (p.kind === 'package') return p.priceFrom + ' ₴/компл.';
       if (p.kind === 'merch') return p.unitPrice + ' ₴/шт';
+      if (p.kind === 'simple') return 'від ' + (p.priceFrom || (p.tiers && p.tiers[0] ? p.tiers[0].price : 0)) + ' ₴/шт';
       return 'від ' + p.priceFrom + ' ₴';
     }
     function currentProductKind() { return (cfg.product && cfg.product.kind) || 'print'; }
@@ -3296,13 +3352,39 @@
     function maxQtyForP(p) {
       if (!p) return 1000;
       if (p.kind === 'package') return 50;
+      if (p.kind === 'simple') return Math.max(1, parseInt(p.maxQty, 10) || 1000);
       if (p.kind === 'merch') return 1000;
       if (p.pages) return 1000;
       return isLeafletProductP(p) ? 2500 : 1000;
     }
+    // --- Простий товар (широкоформатка, сувеніри): ціна/шт за щаблями тиражу ---
+    // tiers = [{qty:1,price:2500},{qty:10,price:2200}] — «від 10 шт — 2200 ₴/шт».
+    // Разом = тираж × ціна поточного щабля; препресс і макетування включені у вказану ціну.
+    function productTiersS(p) {
+      return ((p && p.tiers) || []).filter(function (t) { return t && t.qty > 0 && isFinite(t.price); }).slice().sort(function (a, b) { return a.qty - b.qty; });
+    }
+    function simpleRateForS(p, qty) {
+      const t = productTiersS(p);
+      if (!t.length) return 0;
+      let rate = t[0].price;
+      for (const s of t) if (qty >= s.qty) rate = s.price;
+      return rate;
+    }
+    function calcSimpleS(p, qty) {
+      const q = Math.max(1, Math.floor(qty) || 1);
+      const rate = simpleRateForS(p, q);
+      const total = Math.round(rate * q * 100) / 100;
+      const nextTier = productTiersS(p).find(function (t) { return t.qty > q; }) || null;
+      return { kind: 'simple', layout: { count: 0, cols: 0, rows: 0, rotated: false }, itemsPerSheet: 0, sheetsNeeded: 0,
+        printCost: 0, paperCost: 0, lamCost: 0, finCost: 0, prepressCost: 0, total, unit: rate,
+        wastePercent: 0, isMultipage: false, pages: 1, pagesPerSheet: 0, sheetsPerCopy: 0, blockSheets: 0, hasCover: false,
+        coverSheets: 0, coverColor: '4+0', coverPerSheet: 0, blockPrintCost: 0, coverPrintCost: 0, blockPaperCost: 0, coverPaperCost: 0,
+        merchUnit: 0, merchGoodsCost: 0, pkgUnit: 0, simpleRate: rate, simpleNextTier: nextTier };
+    }
 
-    // Уніфікований розрахунок будь-якого виробу (print / merch / package)
+    // Уніфікований розрахунок будь-якого виробу (print / merch / package / simple)
     function calcAnyProduct(p, qty, itemsOverride) {
+      if (p.kind === 'simple') return calcSimpleS(p, qty);
       if (p.kind === 'merch') {
         const q = Math.max(1, Math.floor(qty) || 1);
         const goods = Math.round((p.unitPrice || 0) * q * 100) / 100;
@@ -3646,7 +3728,8 @@
       }
     }
 
-    // v15: кольори квадратів-номерів за категорією («квадрати по кольору»)
+    // v15: кольори квадратів-номерів за категорією («квадрати по кольору»);
+    // для нових категорій з адмінки — fallback на meta.color, далі нейтральний
     const CAT_SQ_COLORS = {
       polygraphy: '#38bdf8', advertising: '#fbbf24', stickers: '#f87171',
       posters: '#a78bfa', booklets: '#34d399', office: '#94a3b8',
@@ -3677,9 +3760,10 @@
         item.title = p.desc;
         const pNum = String(PRODUCT_NUMBERS[p.id] || 0).padStart(3, "0");
         const pIdx = PRODUCT_NUMBERS[p.id] || 0;
-        const sqColor = CAT_SQ_COLORS[p.category] || '#e2e8f0';
-        const thumbHtml = pIdx
-          ? `<span class="pli-thumb-icon">${p.icon}</span><img src="mockups/${pIdx}.jpg" alt="" loading="lazy" onerror="this.remove()">`
+        const sqColor = CAT_SQ_COLORS[p.category] || (CATEGORY_META.find(m => m.key === p.category) || {}).color || '#e2e8f0';
+        const thumbSrc = p.photo ? p.photo : (pIdx ? 'mockups/' + pIdx + '.jpg' : '');
+        const thumbHtml = thumbSrc
+          ? `<span class="pli-thumb-icon">${p.icon}</span><img src="${thumbSrc}" alt="" loading="lazy" onerror="this.remove()">`
           : `<span class="pli-thumb-icon">${p.icon}</span>`;
         item.innerHTML = `
           <div class="pli-left">
@@ -3736,6 +3820,7 @@
       const kindChanged = prevKindSelect !== nextKind;
       if (isMultipageProduct()) cfg.quantity = kindChanged ? Math.max(p.minQty, 100) : Math.min(1000, Math.max(1, cfg.quantity));
       else if (p.kind === 'merch') cfg.quantity = kindChanged ? Math.max(p.minQty, 10) : Math.min(1000, Math.max(1, cfg.quantity));
+      else if (p.kind === 'simple') cfg.quantity = kindChanged ? (productTiersS(p)[0] ? productTiersS(p)[0].qty : Math.max(p.minQty, 1)) : Math.min(maxQtyForP(p), Math.max(1, cfg.quantity));
       else if (p.kind === 'package') cfg.quantity = kindChanged ? 1 : Math.min(50, Math.max(1, cfg.quantity));
       else cfg.quantity = Math.min(maxQtyForP(p), Math.max(1, cfg.quantity));
       document.getElementById('qtyInput').value = cfg.quantity;
@@ -3756,11 +3841,23 @@
       show('coverControlWrap', kind === 'print' && hasCoverProduct());
       show('finishingControlWrap', kind === 'print');
       show('merchControlWrap', kind === 'merch');
+      show('simpleControlWrap', kind === 'simple');
       show('packageControlWrap', kind === 'package');
 
       // Чіпи тиражу за типом
       const chips = document.getElementById('qtyPresetChips');
-      if (kind !== 'print') {
+      if (kind === 'simple') {
+        // Щаблі ціни простого товару — природні точки тиражу (напр. 1, 10)
+        chips.innerHTML = '';
+        productTiersS(cfg.product).map(function (t) { return t.qty; }).filter(function (q) { return q <= maxQtyForP(cfg.product); }).forEach(function (q) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'opt-chip' + (cfg.quantity === q ? ' active' : '');
+          b.onclick = () => setQty(q);
+          b.textContent = String(q);
+          chips.appendChild(b);
+        });
+      } else if (kind !== 'print') {
         const tiers = kind === 'merch' ? [10, 25, 50, 100, 250, 500, 1000] : [1, 2, 3, 5, 10];
         chips.innerHTML = '';
         tiers.forEach(q => {
@@ -3794,6 +3891,19 @@
       if (kind === 'merch' && cfg.product) {
         const note = document.getElementById('merchNoteBox');
         if (note) note.innerHTML = '👕 <strong>' + (cfg.product.applyMethod || 'DTF-принт') + '</strong> на готових виробах. Формула: <strong>тираж × ' + cfg.product.unitPrice + ' ₴/шт + макетування (+)</strong> — разово на замовлення. Розміри S–3XL, кольори на вибір — вкажіть у коментарі до замовлення.';
+      }
+
+      // Простий товар: нотатка про щаблі ціни
+      if (kind === 'simple' && cfg.product) {
+        const note = document.getElementById('simpleNoteBox');
+        if (note) {
+          const st = productTiersS(cfg.product);
+          const cur = simpleRateForS(cfg.product, cfg.quantity);
+          const nextT = st.find(function (t) { return t.qty > cfg.quantity; });
+          note.innerHTML = 'Щаблі ціни: <strong>' + (st.map(function (t) { return 'від ' + t.qty + ' шт — ' + formatUAH(t.price) + '/шт'; }).join(' · ') || '—') + '</strong>.' +
+            ' Поточна ціна: <strong>' + formatUAH(cur) + '/шт</strong>' + (nextT ? ', від ' + nextT.qty + ' шт — ' + formatUAH(nextT.price) + '/шт' : '') + '.' +
+            ' Макетування включено у ціну (+).';
+        }
       }
 
       // Пакунок: редагований склад
@@ -4178,8 +4288,10 @@
       document.getElementById('activeProductTitle').textContent = calcProductNameS(cfg);
       document.getElementById('activeProductMeta').textContent = kind === 'merch'
         ? 'Мерч • Друк на готових виробах: ' + (p.applyMethod || 'друк лого')
-        : 'Комплект • ' + (p.contents || []).length + ' позицій • економія ~10%';
-      document.getElementById('currentDimLabel').textContent = kind === 'merch' ? (p.unitPrice + ' ₴/шт') : ('від ' + p.priceFrom + ' ₴/компл.');
+        : kind === 'simple'
+          ? 'Виріб • ' + (productTiersS(p).map(function (t) { return 'від ' + t.qty + ' шт — ' + formatUAH(t.price) + '/шт'; }).join(' · ') || 'ціна за запитом')
+          : 'Комплект • ' + (p.contents || []).length + ' позицій • економія ~10%';
+      document.getElementById('currentDimLabel').textContent = kind === 'merch' ? (p.unitPrice + ' ₴/шт') : kind === 'simple' ? (simpleRateForS(p, cfg.quantity) + ' ₴/шт') : ('від ' + p.priceFrom + ' ₴/компл.');
       const fromPrice = document.getElementById('activeProductFromPrice');
       if (fromPrice) fromPrice.textContent = productPriceTag(p);
 
@@ -4190,7 +4302,9 @@
         : '≈ ' + formatUAH(res.unit) + ' / шт.';
       document.getElementById('sumA3Count').textContent = kind === 'merch'
         ? (p.applyMethod || 'друк лого')
-        : (p.contents || []).length + ' позицій у комплекті';
+        : kind === 'simple'
+          ? (cfg.quantity + ' шт × ' + formatUAH(res.simpleRate) )
+          : (p.contents || []).length + ' позицій у комплекті';
       updateQtyLiveTotal(res);
       renderPkgItems();
 
@@ -4204,7 +4318,16 @@
         info.className = 'a3-compact-box merch-info-box';
         if (a3Box && a3Box.parentNode) a3Box.parentNode.insertBefore(info, a3Box.nextSibling);
       }
-      if (kind === 'merch') {
+      if (kind === 'simple') {
+        const st = productTiersS(p);
+        info.innerHTML = '<div class="a3-thumb-sheet merch-thumb">' + p.icon + '</div>' +
+          '<div class="a3-stats-col">' +
+          '<div>Ціна поточного щабля: <span class="a3-stat-highlight">' + formatUAH(res.simpleRate) + '/шт</span></div>' +
+          '<div>Щаблі: <span style="color:#fff;">' + (st.map(function (t) { return 'від ' + t.qty + ' шт — ' + formatUAH(t.price); }).join(' · ') || '—') + '</span></div>' +
+          '<div>Тираж: <span style="color:#fff;">' + cfg.quantity + ' шт × ' + formatUAH(res.simpleRate) + '</span></div>' +
+          '<div>Макетування: <span class="a3-stat-highlight">+ (включено у ціну)</span></div>' +
+          '</div>';
+      } else if (kind === 'merch') {
         info.innerHTML = '<div class="a3-thumb-sheet merch-thumb">' + p.icon + '</div>' +
           '<div class="a3-stats-col">' +
           '<div>Спосіб нанесення: <span class="a3-stat-highlight">' + (p.applyMethod || 'друк лого') + '</span></div>' +
@@ -4272,7 +4395,7 @@
         const p500 = calcAnyProduct(p, 500);
         const p1000 = calcAnyProduct(p, 1000);
         const catShort = (CATEGORY_META.find(m => m.key === p.category) || {}).short || p.category;
-        const typeCol = p.kind === 'package' ? 'Пакунок-комплект' : p.kind === 'merch' ? (p.applyMethod || 'друк лого') : (p.defaultW + '×' + p.defaultH + ' мм');
+        const typeCol = p.kind === 'package' ? 'Пакунок-комплект' : p.kind === 'merch' ? (p.applyMethod || 'друк лого') : p.kind === 'simple' ? ('Простий товар · від ' + p.minQty + ' шт') : (p.defaultW + '×' + p.defaultH + ' мм');
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -4320,6 +4443,12 @@
             '<div>Тираж: <strong>' + cfg.quantity + ' шт.</strong> × ' + p.unitPrice + ' ₴</div>' +
             '<div>Макетування лого: <strong>+</strong></div>' +
             '<div style="border-top: 1px solid #232738; margin-top: 6px; padding-top: 6px; color: var(--accent-yellow); font-size: 14px; font-weight: 800;">РАЗОМ: ' + formatUAH(res.total) + ' (' + formatUAH(res.unit) + ' / шт)</div>'
+          : kind === 'simple'
+            ? '<div>Виріб: <strong>' + productCodeOf(p) + ' ' + calcProductNameS(cfg) + '</strong></div>' +
+              '<div>Тираж: <strong>' + cfg.quantity + ' шт.</strong> × ' + formatUAH(res.simpleRate) + '/шт</div>' +
+              '<div>Щаблі: <strong>' + (productTiersS(p).map(function (t) { return 'від ' + t.qty + ' шт — ' + formatUAH(t.price) + '/шт'; }).join(' · ') || '—') + '</strong></div>' +
+              '<div>Макетування: <strong>+ (включено у ціну)</strong></div>' +
+              '<div style="border-top: 1px solid #232738; margin-top: 6px; padding-top: 6px; color: var(--accent-yellow); font-size: 14px; font-weight: 800;">РАЗОМ: ' + formatUAH(res.total) + '</div>'
           : '<div>Пакунок: <strong>' + productCodeOf(p) + ' ' + calcProductNameS(cfg) + '</strong></div>' +
             '<div>Кількість комплектів: <strong>' + cfg.quantity + '</strong></div>' +
             '<div style="font-size: 11px; color: var(--text-muted);">Склад: ' + pkgItemsSpecText(true) + '</div>' +
@@ -4381,6 +4510,27 @@
       const res = calculatePriceFor(cfg.width, cfg.height, cfg.quantity, cfg.color, cfg.paperKey, cfg.laminationKey, cfg.finishing, currentCalcOpts());
       const finList = ['scoring','folding','corners','hole','staples','spring','plotter','perforation'].filter(k => cfg.finishing[k]).map(k => prices.finishing[k].name);
       const kind = currentProductKind();
+      if (kind === 'simple') {
+        const res = calcAnyProduct(cfg.product, cfg.quantity, cfg.pkgItems);
+        const st = productTiersS(cfg.product);
+        return {
+          _subject: 'Замовлення ' + code + ' — ' + calcProductNameS(cfg) + ' (' + cfg.quantity + ' шт) — alfa.copy.print',
+          _template: 'table', _captcha: 'false',
+          'Номер заявки': code,
+          'Контактна особа': document.getElementById('fName').value,
+          'Телефон': document.getElementById('fPhone').value,
+          'Email замовника': document.getElementById('fEmail').value,
+          'Код виробу': productCodeOf(cfg.product),
+          'Виріб': calcProductNameS(cfg),
+          'Тираж, шт': String(cfg.quantity),
+          'Щаблі ціни': st.map(function (t) { return 'від ' + t.qty + ' шт — ' + formatUAH(t.price) + '/шт'; }).join(' · '),
+          'Ціна за 1 шт': formatUAH(res.simpleRate),
+          'Макетування': '+ (включено у ціну)',
+          'РАЗОМ': formatUAH(res.total),
+          'Коментар': document.getElementById('fComment').value || '—',
+          email: document.getElementById('fEmail').value
+        };
+      }
       if (kind === 'merch') {
         const res = calcAnyProduct(cfg.product, cfg.quantity, cfg.pkgItems);
         return {
@@ -4613,6 +4763,10 @@
     function cartSpecStatic(res) {
       const kind = currentProductKind();
       if (kind === 'merch') return (cfg.product.applyMethod || 'друк лого') + ' · ' + cfg.product.unitPrice + ' ₴/шт';
+      if (kind === 'simple') {
+        const next = res.simpleNextTier ? ' · від ' + res.simpleNextTier.qty + ' шт — ' + formatUAH(res.simpleNextTier.price) + '/шт' : '';
+        return formatUAH(res.simpleRate) + '/шт' + next;
+      }
       if (kind === 'package') {
         const items = cfg.pkgItems || (cfg.product ? cfg.product.items : []) || [];
         return items.map(it => { const cp = productsCatalog.find(x => x.id === it.id); return (cp ? cp.name : it.id) + ' — ' + it.qty * cfg.quantity + ' шт'; }).join('; ');
@@ -4675,6 +4829,17 @@
           '\nТираж: ' + cfg.quantity + ' шт.' +
           '\nВартість виробів: ' + formatUAH(res.merchGoodsCost) +
           '\nМакетування лого: +' +
+          '\nЦіна за 1 шт: ' + formatUAH(res.unit) +
+          '\nРАЗОМ: ' + formatUAH(res.total);
+      }
+      if (kind === 'simple') {
+        const st = productTiersS(cfg.product);
+        const nextT = res.simpleNextTier;
+        return 'alfa.copy.print — ТЗ замовлення\nВиріб: ' + code + ' ' + name +
+          '\nТираж: ' + cfg.quantity + ' шт.' +
+          '\nЩаблі ціни: ' + (st.map(function (t) { return 'від ' + t.qty + ' шт — ' + formatUAH(t.price) + '/шт'; }).join(' · ') || '—') +
+          '\nЦіна поточного щабля: ' + formatUAH(res.simpleRate) + '/шт' + (nextT ? '\nНаступний щабель: від ' + nextT.qty + ' шт — ' + formatUAH(nextT.price) + '/шт' : '') +
+          '\nМакетування: + (включено у ціну)' +
           '\nЦіна за 1 шт: ' + formatUAH(res.unit) +
           '\nРАЗОМ: ' + formatUAH(res.total);
       }
@@ -4763,6 +4928,12 @@
         rows.push(['Нанесення:', (cfg.product.applyMethod || 'друк лого') + ' — принт стійкий до прання та носіння']);
         rows.push(['Розміри:', 'одяг S–3XL, кольори виробів — на вибір (вкажіть у коментарі до заявки)']);
         rows.push(['Формула:', 'тираж × ' + cfg.product.unitPrice + ' ₴/шт + макетування (+) — разово на замовлення']);
+      } else if (kind === 'simple') {
+        const st = productTiersS(cfg.product);
+        rows.push(['Виріб:', (cfg.product ? cfg.product.name : 'Виріб') + ' — готовий виріб' + (cfg.product.photo ? ' з фото вище' : '')]);
+        rows.push(['Щаблі ціни:', st.map(function (t) { return 'від ' + t.qty + ' шт — ' + formatUAH(t.price) + '/шт'; }).join(' · ') || 'ціна фіксована — уточнюйте у менеджера']);
+        rows.push(['Формула:', 'тираж × ' + formatUAH(res.simpleRate) + '/шт (поточний щабель); препресс і макетування включені у ціну (+)']);
+        if (res.simpleNextTier) rows.push(['Вигода:', 'від ' + res.simpleNextTier.qty + ' шт ціна падає до ' + formatUAH(res.simpleNextTier.price) + '/шт — вигідніше брати тиражем']);
       } else if (kind === 'package') {
         rows.push(['Виріб:', (cfg.product ? cfg.product.name : 'Пакунок') + ' — готовий набір «під ключ»']);
         const items = cfg.pkgItems || (cfg.product ? cfg.product.items : []) || [];
@@ -4812,6 +4983,11 @@
         push('Базова ціна:', cfg.product.unitPrice + ' ₴/шт');
         push('Тираж:', cfg.quantity + ' шт.');
         push('Макетування лого:', '+');
+      } else if (kind === 'simple') {
+        push('Тираж:', cfg.quantity + ' шт.');
+        push('Ціна за тираж:', formatUAH(res.simpleRate) + '/шт');
+        if (res.simpleNextTier) push('Наступний щабель:', 'від ' + res.simpleNextTier.qty + ' шт — ' + formatUAH(res.simpleNextTier.price) + '/шт');
+        push('Макетування:', '+ (включено у ціну)');
       } else if (kind === 'package') {
         push('Тираж:', cfg.quantity + ' компл.');
         (cfg.pkgItems || (cfg.product ? cfg.product.items : []) || []).forEach(it => {
@@ -4859,7 +5035,7 @@
         spec: cartSpecStatic(res),
         qtyLabel: kind === 'package' ? cfg.quantity + ' компл.' : cfg.quantity + ' шт',
         qty: cfg.quantity,
-        step: kind === 'package' ? 1 : (kind === 'merch' ? 10 : 25),
+        step: kind === 'package' ? 1 : (kind === 'merch' ? 10 : kind === 'simple' ? 1 : 25),
         cfgSnap: JSON.parse(JSON.stringify({
           product: cfg.product, width: cfg.width, height: cfg.height, pages: cfg.pages,
           color: cfg.color, paperKey: cfg.paperKey, laminationKey: cfg.laminationKey,
@@ -4885,6 +5061,7 @@
       const kind = (p && p.kind) || 'print';
       if (p && p.minQty) q = Math.max(p.minQty, q);
       if (kind === 'package') q = Math.min(50, q);
+      else if (kind === 'simple') q = Math.min(maxQtyForP(p), q);
       else if (kind === 'merch') q = Math.min(1000, q);
       else if (snap.pages > 1 || (p && p.pages)) q = Math.min(1000, q);
       else q = Math.min(isLeafletProductP(p) ? 2500 : 1000, q);
@@ -5071,7 +5248,7 @@
       const p = productsCatalog.find(x => x.id === id);
       if (!p || p.kind === 'package') return;
       if ((cfg.pkgItems || []).some(x => x.id === id)) { showToast('Ця позиція вже є у пакунку — змініть її кількість'); return; }
-      const defQty = p.kind === 'merch' ? Math.max(p.minQty, 10) : Math.max(p.minQty, 100);
+      const defQty = p.kind === 'merch' ? Math.max(p.minQty, 10) : p.kind === 'simple' ? (productTiersS(p)[0] ? productTiersS(p)[0].qty : Math.max(p.minQty, 1)) : Math.max(p.minQty, 100);
       cfg.pkgItems = cfg.pkgItems || [];
       cfg.pkgItems.push({ id: id, qty: defQty });
       recalcMerchPackage();
@@ -5103,7 +5280,7 @@
         return;
       }
       win.classList.remove('empty');
-      win.innerHTML = '<img id="mockupImg" src="mockups/' + num + '.jpg" alt="Мокап: ' + p.name + '">' +
+      win.innerHTML = '<img id="mockupImg" src="' + (p.photo ? p.photo : 'mockups/' + num + '.jpg') + '" alt="Мокап: ' + p.name + '">' +
         '<span class="mockup-num">№' + String(num).padStart(3, '0') + '</span>';
       const img = document.getElementById('mockupImg');
       if (img) {
@@ -5112,7 +5289,7 @@
           win.innerHTML = mockupPlaceholderHtml(p, num);
         };
       }
-      win.onclick = () => { window.open('mockups/' + num + '.jpg', '_blank'); };
+      win.onclick = () => { window.open(p.photo ? p.photo : 'mockups/' + num + '.jpg', '_blank'); };
       win.title = 'Мокап: ' + p.name + ' — клікніть, щоб збільшити';
     }
 
@@ -5426,7 +5603,7 @@
         if (!p) return;
         aiPushMsg(h.label, 'user');
         selectFromDb(h.productId);
-        const defQty = p.kind === 'package' ? 1 : Math.max(p.minQty, 1);
+        const defQty = p.kind === 'package' ? 1 : p.kind === 'simple' ? (productTiersS(p)[0] ? productTiersS(p)[0].qty : Math.max(p.minQty, 1)) : Math.max(p.minQty, 1);
         setQty(defQty);
         aiPushMsg('Готово: обрав ' + productNo(p) + ' ' + p.name + ' у калькуляторі, тираж ' + defQty + ' шт.' + (p.kind === 'merch' ? '\nМерч: тираж × ' + p.unitPrice + ' ₴/шт + макетування (+).' : ''), 'bot', { hints: [{ label: 'Мій розрахунок', q: 'мій розрахунок' }, { label: '✉️ Як замовити?', q: 'як замовити' }] });
         return;
@@ -5666,7 +5843,7 @@
         name: calcProductNameS(cfg),
         spec: cartSpecStatic(res),
         qty: cfg.quantity,
-        step: kind === 'package' ? 1 : (kind === 'merch' ? 10 : 25),
+        step: kind === 'package' ? 1 : (kind === 'merch' ? 10 : kind === 'simple' ? 1 : 25),
         unit: res.unit,
         total: res.total,
         cfgSnap: JSON.parse(JSON.stringify({
@@ -5682,15 +5859,16 @@
       const p = productsCatalog.find(x => x.id === id);
       if (!p) return null;
       const kind = p.kind || 'print';
-      const qty = kind === 'package' ? 1 : (kind === 'merch' ? Math.max(p.minQty || 1, 10) : Math.max(p.minQty || 1, 100));
+      const qty = kind === 'package' ? 1 : (kind === 'simple' ? (productTiersS(p)[0] ? productTiersS(p)[0].qty : Math.max(p.minQty || 1, 1)) : kind === 'merch' ? Math.max(p.minQty || 1, 10) : Math.max(p.minQty || 1, 100));
       const res2 = calcAnyProduct(p, qty);
       let spec;
       if (kind === 'merch') spec = (p.applyMethod || 'друк лого') + ' · ' + p.unitPrice + ' ₴/шт';
+      else if (kind === 'simple') spec = (productTiersS(p).map(function (t) { return 'від ' + t.qty + ' шт — ' + formatUAH(t.price) + '/шт'; }).join(' · ') || '—');
       else if (kind === 'package') spec = (p.contents || []).join('; ');
       else spec = p.defaultW + '×' + p.defaultH + ' мм · ' + (p.defaultColor || '4+4') + ', ' + (prices.paper[p.defaultPaper] ? prices.paper[p.defaultPaper].name : p.defaultPaper);
       return { key: cpNextKey(), item: {
         code: productCodeOf(p), icon: p.icon, name: p.name, spec: spec,
-        qty: qty, step: kind === 'package' ? 1 : (kind === 'merch' ? 10 : 25),
+        qty: qty, step: kind === 'package' ? 1 : (kind === 'merch' ? 10 : kind === 'simple' ? 1 : 25),
         unit: res2.unit, total: res2.total,
         cfgSnap: {
           product: p, width: p.defaultW, height: p.defaultH, pages: p.pages || 1,
@@ -5914,6 +6092,18 @@
     }
 
     window.addEventListener('DOMContentLoaded', init);
+  </script>
+
+  <!-- TASK 22: АДМІНКА — завантаження оверрайду ДО init (класичні скрипти блокують DOMContentLoaded) -->
+  <script src="catalog-override.js"></script>
+  <script>
+    /* локального catalog-override.js немає → тягнемо з GitHub Pages адмінки (синхронно) */
+    if (!window.CATALOG_OVERRIDE_LOADED && typeof ADMIN_OVERRIDE_URL !== 'undefined') {
+      document.write('<script src="' + ADMIN_OVERRIDE_URL + '"><\/script>');
+    }
+  </script>
+  <script>
+    if (window.CATALOG_OVERRIDE) window.applyCatalogOverride(window.CATALOG_OVERRIDE);
   </script>
 </body>
 </html>
