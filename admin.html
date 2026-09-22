@@ -397,7 +397,9 @@
           <div class="gh-note">
             Як зробити токен: GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → Generate new token →
             Repository access: <b>Only select repositories → alfa.copy.print</b> → Permissions → Contents: <b>Read and write</b>.
-            Токен зберігається у вашому браузері і надсилається лише напряму на api.github.com.
+            Токен зберігається у вашому браузері і надсилається лише напряму на api.github.com.<br>
+            <b>ВАЖЛИВО:</b> токен «тільки на зчитування» не підходить — публікація впаде з помилкою 403.
+            Право запису перевіряється автоматично кнопкою «Перевірити з'єднання».
           </div>
         </div>
         <div class="card">
@@ -1542,7 +1544,7 @@ async function ghApi(method, path, bodyObj) {
   try { j = await res.json(); } catch (e) {}
   if (!res.ok) {
     const hint = res.status === 401 ? ' — токен недійсний або помилковий'
-      : res.status === 403 ? ' — токен без права запису або вичерпано ліміт запитів'
+      : res.status === 403 ? ' — у токена немає права запису. Виправлення: GitHub → Settings → Developer settings → Fine-grained tokens → ваш токен → Edit → Permissions → Contents → Read and write → Update token'
       : res.status === 404 ? ' — шлях не знайдено (перевірте репозиторій/гілку)' : '';
     throw new Error('GitHub ' + res.status + ': ' + (j.message || 'помилка') + hint);
   }
@@ -1556,9 +1558,30 @@ async function ghTest() {
     const r = await ghApi('GET', '/repos/' + GH.repo);
     GH.branch = r.default_branch || GH.branch || 'main';
     ghSaveSettings(); ghFillForm();
-    ghLog('З\u2019єднання ок. Гілка: ' + GH.branch + '. Права запису перевіряться при публікації.', 'ok');
-    toast('GitHub: з\u2019єднання встановлено');
-  } catch (e) { ghLog(e.message, 'bad'); toast('GitHub: ' + e.message); }
+  } catch (e) { ghLog(e.message, 'bad'); toast('GitHub: ' + e.message); return; }
+  /* TASK 23: перевірка ПРАВА ЗАПИСУ — створюємо пробний файл і одразу видаляємо.
+     Read-only токен проходить GET, але падає тут — користувач дізнається про
+     проблему ЗАРАЗ, а не при публікації. */
+  ghLog('Гілка: ' + (GH.branch || 'main') + '. Перевіряю право запису …');
+  const probe = '.admin-probe-' + Date.now().toString(36);
+  let sha = null;
+  try {
+    const pr = await ghApi('PUT', '/repos/' + GH.repo + '/contents/' + probe, {
+      message: 'admin: перевірка права запису',
+      content: 'b2s=',
+      branch: GH.branch || 'main'
+    });
+    sha = pr.content && pr.content.sha;
+  } catch (e) {
+    if (/403/.test(e.message)) {
+      ghLog('Токен БЕЗ права запису. Виправлення (2 хв): GitHub → аватар → Settings → Developer settings → Fine-grained tokens → клік на ваш токен → Edit → Permissions → Repository permissions → Contents → Read and write → Update token. Токен у адмінці міняти не треба — просто натисніть «Перевірити з\u2019єднання» ще раз.', 'bad');
+      toast('Токен без права запису — див. журнал');
+    } else { ghLog(e.message, 'bad'); toast('GitHub: ' + e.message); }
+    return;
+  }
+  try { if (sha) await ghApi('DELETE', '/repos/' + GH.repo + '/contents/' + probe, { message: 'admin: видалення пробного файлу', sha: sha, branch: GH.branch || 'main' }); } catch (e) { /* не критично */ }
+  ghLog('З\u2019єднання ок. Гілка: ' + (GH.branch || 'main') + '. Право запису є — можна публікувати ✓', 'ok');
+  toast('GitHub: право запису підтверджено');
 }
 function b64utf8(s) { return btoa(unescape(encodeURIComponent(s))); }
 function utf8b64(s) { return decodeURIComponent(escape(atob(s))); }

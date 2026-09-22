@@ -6095,16 +6095,34 @@
     window.addEventListener('DOMContentLoaded', init);
   </script>
 
-  <!-- TASK 22: АДМІНКА — завантаження оверрайду ДО init (класичні скрипти блокують DOMContentLoaded) -->
-  <script src="catalog-override.js"></script>
+  <!-- TASK 23: АДМІНКА — оверрайд цін/виробів із GitHub. Кулюнепробивний завантажувач:
+       дані ТІЛЬКИ парсяться (код файлу НІКОЛИ не виконується), тому жоден зламаний
+       файл не здатен зависнути сайт. Збій/таймаут → сайт спокійно працює далі
+       на вбудованих цінах. Синхронний XHR — бо applyCatalogOverride має спрацювати ДО init. -->
   <script>
-    /* локального catalog-override.js немає → тягнемо з GitHub Pages адмінки (синхронно) */
-    if (!window.CATALOG_OVERRIDE_LOADED && typeof ADMIN_OVERRIDE_URL !== 'undefined') {
-      document.write('<script src="' + ADMIN_OVERRIDE_URL + '"><\/script>');
-    }
-  </script>
-  <script>
-    if (window.CATALOG_OVERRIDE) window.applyCatalogOverride(window.CATALOG_OVERRIDE);
+    (function () {
+      var urls = ['catalog-override.js?v=' + Date.now()];
+      if (typeof ADMIN_OVERRIDE_URL !== 'undefined') urls.push(ADMIN_OVERRIDE_URL + '?v=' + Date.now());
+      for (var i = 0; i < urls.length; i++) {
+        try {
+          var x = new XMLHttpRequest();
+          x.open('GET', urls[i], false);
+          x.send(null);
+          if (x.status !== 200) continue;
+          var js = String(x.responseText || '');
+          var key = js.indexOf('window.CATALOG_OVERRIDE =');
+          if (key < 0) continue;
+          var eq = js.indexOf('=', key);
+          var end = js.lastIndexOf(';');
+          if (eq < 0 || end <= eq) continue;
+          var ov = JSON.parse(js.slice(eq + 1, end));
+          if (ov && typeof ov === 'object' && (ov.prices || ov.products || ov.categories)) {
+            window.applyCatalogOverride(ov);
+            break;
+          }
+        } catch (e) { /* збитий файл / мережа → наступне джерело або вбудовані дані */ }
+      }
+    })();
   </script>
 </body>
 </html>
