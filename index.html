@@ -3689,7 +3689,45 @@
       const bannerPrice = document.getElementById('activeProductFromPrice');
       if (bannerPrice && cfg.product) bannerPrice.textContent = productPriceTag(cfg.product);
       recalc();
+      // TASK 24: оверрайд тепер летить асинхронно — після init він може дозійти.
+      window.__alfaInitDone = true;
     }
+
+    // TASK 24: оновлення інтерфейсу після асинхронного застосування catalog-override.
+    // Викликається ТОЛЬКИ коли init уже відпрацював (інакше init сам відрендерить свіжі дані).
+    window.__alfaRefreshAfterOverride = function () {
+      try {
+        // активний виріб може бути замінений/оновлений оверрайдом — синхронізуємо за id
+        if (cfg.product) {
+          const fresh = productsCatalog.find(x => x.id === cfg.product.id);
+          if (fresh) cfg.product = fresh;
+          else if (productsCatalog.length) cfg.product = productsCatalog[14] || productsCatalog[0];
+          cfg.width = cfg.product.defaultW || cfg.width;
+          cfg.height = cfg.product.defaultH || cfg.height;
+          cfg.paperKey = cfg.product.defaultPaper || cfg.paperKey;
+          cfg.color = cfg.product.defaultColor || cfg.color;
+          cfg.laminationKey = cfg.product.defaultLam || 'none';
+          cfg.pages = cfg.product.pages || 1;
+          cfg.quantity = Math.min(maxQtyForP(cfg.product), Math.max(cfg.quantity, cfg.product.minQty || 1));
+          const qi = document.getElementById('qtyInput');
+          if (qi) qi.value = cfg.quantity;
+        }
+        renderProductsList();
+        renderCategoryButtons();
+        aiUpdateCtx();
+        populatePaperOptions();
+        populateCoverOptions();
+        updateColorButtons();
+        updateFinishingControls();
+        populateFullDbTable();
+        syncKindControls();
+        syncQtyLimits();
+        const bannerPrice = document.getElementById('activeProductFromPrice');
+        if (bannerPrice && cfg.product) bannerPrice.textContent = productPriceTag(cfg.product);
+        renderMockup();
+        recalc();
+      } catch (e) { console.warn('[admin] refresh після оверрайду:', e); }
+    };
 
     function setCategory(cat) {
       currentCategory = cat;
@@ -6095,33 +6133,62 @@
     window.addEventListener('DOMContentLoaded', init);
   </script>
 
-  <!-- TASK 23: АДМІНКА — оверрайд цін/виробів із GitHub. Кулюнепробивний завантажувач:
-       дані ТІЛЬКИ парсяться (код файлу НІКОЛИ не виконується), тому жоден зламаний
-       файл не здатен зависнути сайт. Збій/таймаут → сайт спокійно працює далі
-       на вбудованих цінах. Синхронний XHR — бо applyCatalogOverride має спрацювати ДО init. -->
+  <!-- TASK 24: АДМІНКА — оверрайд цін/виробів із GitHub. Неблокуючий завантажувач:
+       (а) fetch асинхронний — сторінка НІКОЛИ не чекає на мережу при старті;
+       (б) дані ТІЛЬКИ парсяться (JSON.parse), код файлу НІКОЛИ не виконується —
+           тому жоден зламаний файл (зокрема самозавантажувач із document.write,
+           що висив сайт 22.09) не здатен зависнути сторінку;
+       (в) таймаут 8 с на джерело, далі — наступне джерело або вбудовані дані.
+       Якщо оверрайд дозріває після init — інтерфейс оновлюється на льоту. -->
   <script>
     (function () {
       var urls = ['catalog-override.js?v=' + Date.now()];
       if (typeof ADMIN_OVERRIDE_URL !== 'undefined') urls.push(ADMIN_OVERRIDE_URL + '?v=' + Date.now());
-      for (var i = 0; i < urls.length; i++) {
+
+      function parseOverride(js) {
         try {
-          var x = new XMLHttpRequest();
-          x.open('GET', urls[i], false);
-          x.send(null);
-          if (x.status !== 200) continue;
-          var js = String(x.responseText || '');
-          var key = js.indexOf('window.CATALOG_OVERRIDE =');
-          if (key < 0) continue;
+          js = String(js || '');
+          var key = js.indexOf('window.CATALOG_OVERRIDE');
+          if (key < 0) return null;
           var eq = js.indexOf('=', key);
           var end = js.lastIndexOf(';');
-          if (eq < 0 || end <= eq) continue;
+          if (eq < 0 || end <= eq) return null;
           var ov = JSON.parse(js.slice(eq + 1, end));
-          if (ov && typeof ov === 'object' && (ov.prices || ov.products || ov.categories)) {
-            window.applyCatalogOverride(ov);
-            break;
-          }
-        } catch (e) { /* збитий файл / мережа → наступне джерело або вбудовані дані */ }
+          if (ov && typeof ov === 'object' && (ov.prices || ov.products || ov.categories)) return ov;
+        } catch (e) { /* збитий файл → вбудовані дані */ }
+        return null;
       }
+
+      function applyWhenReady(ov) {
+        try { window.applyCatalogOverride(ov); } catch (e) { return; }
+        console.info('[admin] catalog-override застосовано від', ov.updatedAt || '?');
+        if (window.__alfaInitDone && typeof window.__alfaRefreshAfterOverride === 'function') {
+          window.__alfaRefreshAfterOverride();
+        }
+      }
+
+      function tryLoad(i) {
+        if (i >= urls.length) return;
+        var settled = false;
+        var ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+        var to = setTimeout(function () {
+          if (settled) return; settled = true;
+          try { if (ctrl) ctrl.abort(); } catch (e) {}
+          tryLoad(i + 1); // таймаут → наступне джерело
+        }, 8000);
+        fetch(urls[i], ctrl ? { cache: 'no-store', signal: ctrl.signal } : { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.text() : null; })
+          .then(function (txt) {
+            if (settled) return; settled = true; clearTimeout(to);
+            var ov = parseOverride(txt);
+            if (ov) applyWhenReady(ov); else tryLoad(i + 1);
+          })
+          .catch(function () {
+            if (settled) return; settled = true; clearTimeout(to);
+            tryLoad(i + 1);
+          });
+      }
+      tryLoad(0);
     })();
   </script>
 </body>
