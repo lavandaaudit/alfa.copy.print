@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Адмінка · alfa.copy.print — керування каталогом</title>
+<style>
+  /* ===== Адмінка alfa.copy.print — той самий бренд-стиль, що й сайт ===== */
+  :root {
+    --bg: #0b0d13; --bg-panel: #11141d; --bg-card: #161a26;
+    --border: #232839; --border2: #2d3345;
+    --text: #e8ecf5; --text-muted: #9aa3b8; --text-dim: #5d6579;
+    --accent: #ffd400; --accent-hover: #ffe14d;
+    --c: #00aeef; --m: #ec008c; --y: #ffd400; --k: #101318;
+    --ok: #35d07f; --warn: #ff9f43; --bad: #ff5d6e;
+    --radius: 4px;
+    --font-display: 'Unbounded', 'Manrope', system-ui, sans-serif;
+    --font-main: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'Consolas', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scrollbar-color: #2d3345 var(--bg); }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-main); font-size: 13px; line-height: 1.5;
+    min-height: 100vh;
+  }
+  a { color: inherit; }
+  button { font-family: inherit; }
+  input, select, textarea {
+    font-family: inherit; font-size: 12.5px; color: var(--text);
+    background: #0e1119; border: 1px solid var(--border2); border-radius: var(--radius);
+    padding: 6px 8px; outline: none; width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: rgba(255,212,0,.55); }
+  input[type="number"] { font-family: var(--font-mono); }
+  ::placeholder { color: var(--text-dim); }
+
+  /* ===== PIN-брама ===== */
+  .gate {
+    position: fixed; inset: 0; z-index: 500; display: flex;
+    align-items: center; justify-content: center; background:
+    radial-gradient(900px 500px at 50% -10%, rgba(255,212,0,.07), transparent), var(--bg);
+  }
+  .gate-box { width: 340px; background: var(--bg-panel); border: 1px solid var(--border); padding: 26px 24px; }
+  .gate-dots { display: inline-flex; gap: 4px; border: 1px solid var(--border2); padding: 7px; margin-bottom: 14px; }
+  .gate-dots i { width: 9px; height: 9px; display: block; }
+  .gate-title { font-family: var(--font-display); font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .gate-title b { color: var(--accent); }
+  .gate-sub { font-size: 11.5px; color: var(--text-muted); margin-bottom: 16px; }
+  .gate-err { color: var(--bad); font-size: 11px; min-height: 16px; margin-top: 8px; }
+  .gate-input { letter-spacing: 6px; font-size: 20px; text-align: center; font-family: var(--font-mono); }
+
+  /* ===== Шапка адмінки ===== */
+  .atop {
+    position: sticky; top: 0; z-index: 100; height: 54px;
+    display: flex; align-items: center; gap: 12px; padding: 0 18px;
+    background: rgba(14,16,23,.97); border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+  }
+  .alogo { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 800; font-size: 14px; white-space: nowrap; }
+  .alogo-dots { display: inline-flex; gap: 3px; border: 1px solid var(--border2); padding: 4px; }
+  .alogo-dots i { width: 6px; height: 6px; display: block; }
+  .alogo .dotc { background: var(--c); } .alogo .dotm { background: var(--m); }
+  .alogo .doty { background: var(--y); } .alogo .dotk { background: var(--k); }
+  .alogo span.doty-text { color: var(--accent); }
+  .abadge {
+    font-size: 10px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+    padding: 3px 8px; border: 1px solid var(--border2); color: var(--text-muted); white-space: nowrap;
+  }
+  .abadge.changed { color: #141001; background: var(--accent); border-color: var(--accent); }
+  .atop-right { margin-left: auto; display: flex; align-items: center; gap: 7px; }
+
+  .abtn {
+    background: var(--bg-card); color: var(--text); border: 1px solid var(--border2);
+    padding: 6px 11px; font-size: 11.5px; font-weight: 700; cursor: pointer;
+    border-radius: var(--radius); white-space: nowrap; transition: all .15s ease;
+  }
+  .abtn:hover { border-color: rgba(255,212,0,.55); box-shadow: 0 0 12px rgba(255,212,0,.15); }
+  .abtn.accent { background: linear-gradient(180deg, #ffe14d, #ffd400); color: #141001; border-color: #ffd400; }
+  .abtn.accent:hover { box-shadow: 0 0 18px rgba(255,212,0,.4); }
+  .abtn.danger:hover { border-color: var(--bad); color: var(--bad); }
+  .abtn.small { padding: 3px 8px; font-size: 10.5px; }
+
+  /* ===== Таби ===== */
+  .atabs { display: flex; gap: 6px; padding: 12px 18px 0; max-width: 1500px; margin: 0 auto; flex-wrap: wrap; }
+  .atab {
+    padding: 8px 16px; background: transparent; border: 1px solid var(--border);
+    color: var(--text-muted); font-weight: 700; font-size: 12px; cursor: pointer;
+  }
+  .atab.active { background: var(--bg-card); color: var(--accent); border-color: var(--border2); }
+
+  main { max-width: 1500px; margin: 0 auto; padding: 14px 18px 60px; }
+  .tabsec { display: none; }
+  .tabsec.active { display: block; }
+
+  .sec-title {
+    font-family: var(--font-display); font-size: 13px; font-weight: 800;
+    margin: 18px 0 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .sec-title:first-child { margin-top: 0; }
+  .sec-title .hint { font-family: var(--font-main); font-weight: 600; font-size: 10.5px; color: var(--text-dim); }
+
+  .card { background: var(--bg-panel); border: 1px solid var(--border); padding: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 1000px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+  table.at { width: 100%; border-collapse: collapse; }
+  table.at th {
+    text-align: left; font-size: 9.5px; text-transform: uppercase; letter-spacing: .8px;
+    color: var(--text-dim); font-weight: 800; padding: 4px 6px; border-bottom: 1px solid var(--border);
+  }
+  table.at td { padding: 3px 6px; border-bottom: 1px solid rgba(35,40,57,.5); vertical-align: middle; }
+  table.at td input { padding: 4px 7px; font-size: 12px; }
+  table.at .rowkey { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+  table.at .rowkey b { color: var(--text); }
+  .cell-narrow { width: 90px; } .cell-mid { width: 120px; } .cell-xs { width: 36px; text-align: center; }
+  .del-row { background: none; border: 0; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 2px 5px; }
+  .del-row:hover { color: var(--bad); }
+
+  /* ===== Список виробів ===== */
+  .pfilters { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .pfilters input { max-width: 300px; }
+  .pfilters select { max-width: 200px; }
+  .plist { border: 1px solid var(--border); background: var(--bg-panel); }
+  .prow {
+    display: flex; align-items: center; gap: 10px; padding: 7px 12px;
+    border-bottom: 1px solid rgba(35,40,57,.55); cursor: pointer; transition: background .12s ease;
+  }
+  .prow:last-child { border-bottom: 0; }
+  .prow:hover { background: rgba(255,212,0,.04); }
+  .prow-head {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    background: #0d1017; border-bottom: 1px solid var(--border);
+    font-size: 9.5px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-dim); font-weight: 800;
+  }
+  .pnum { font-family: var(--font-mono); font-weight: 800; font-size: 12px; color: var(--accent); width: 44px; flex-shrink: 0; }
+  .pname { font-weight: 700; font-size: 12.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .psub { font-size: 10px; color: var(--text-dim); font-weight: 600; }
+  .prow .pname { flex: 1 1 auto; }
+  .pcat { font-size: 10.5px; color: var(--text-muted); width: 110px; flex-shrink: 0; }
+  .pkind { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; padding: 2px 7px; border: 1px solid var(--border2); color: var(--text-muted); width: 84px; text-align: center; flex-shrink: 0; }
+  .pkind.print { color: #7fc7ff; border-color: rgba(0,174,239,.4); }
+  .pkind.merch { color: #ff9fe0; border-color: rgba(236,0,140,.4); }
+  .pkind.package { color: #9ff0c4; border-color: rgba(53,208,127,.4); }
+  .pkind.simple { color: #c4b5fd; border-color: rgba(167,139,250,.45); }
+  .pprice { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--text); width: 150px; text-align: right; flex-shrink: 0; }
+  .pactions { display: flex; gap: 4px; flex-shrink: 0; }
+  .prow.new-product .pnum { color: var(--ok); }
+
+  /* ===== Модалки ===== */
+  .modal-ov {
+    position: fixed; inset: 0; z-index: 300; background: rgba(3,5,10,.8);
+    backdrop-filter: blur(6px); display: none; align-items: flex-start; justify-content: center;
+    padding: 26px 14px; overflow-y: auto;
+  }
+  .modal-ov.open { display: flex; }
+  .modal { width: min(1060px, 100%); background: var(--bg-panel); border: 1px solid var(--border2); box-shadow: 0 24px 80px rgba(0,0,0,.55); }
+  .modal.narrow { width: min(640px, 100%); }
+  .modal-head {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-panel); z-index: 5;
+  }
+  .modal-title { font-family: var(--font-display); font-size: 13px; font-weight: 800; }
+  .modal-sub { font-size: 10.5px; color: var(--text-dim); }
+  .modal-x { margin-left: auto; background: none; border: 1px solid var(--border2); color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; font-size: 14px; }
+  .modal-x:hover { color: var(--bad); border-color: var(--bad); }
+  .modal-body { padding: 16px; }
+
+  .fgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .fgrid .span2 { grid-column: span 2; } .fgrid .span4 { grid-column: span 4; }
+  @media (max-width: 900px) { .fgrid { grid-template-columns: 1fr 1fr; } .fgrid .span2, .fgrid .span4 { grid-column: span 2; } }
+  .fg label { display: block; font-size: 9.5px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-dim); font-weight: 800; margin-bottom: 4px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chk { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border2); padding: 4px 8px; font-size: 11px; cursor: pointer; user-select: none; }
+  .chk input { width: auto; }
+  .chk.on { border-color: rgba(255,212,0,.55); color: var(--accent); }
+
+  /* Живий прорахунок у редакторі */
+  .preview { border: 1px solid var(--border2); background: #0d1017; padding: 12px; }
+  .preview-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); font-weight: 800; margin-bottom: 8px; }
+  .preview-total { font-family: var(--font-display); font-size: 24px; font-weight: 800; color: var(--accent); }
+  .preview-meta { font-size: 10.5px; color: var(--text-muted); margin: 4px 0 10px; }
+  .preview table { width: 100%; border-collapse: collapse; }
+  .preview td, .preview th { padding: 3px 6px; font-size: 11px; border-bottom: 1px solid rgba(35,40,57,.5); text-align: right; font-family: var(--font-mono); }
+  .preview th { color: var(--text-dim); font-weight: 700; }
+  .preview td:first-child, .preview th:first-child { text-align: left; font-family: var(--font-main); color: var(--text-muted); }
+  .preview .warn { color: var(--warn); font-size: 10.5px; margin-top: 6px; }
+
+  .pkg-item-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+  .pkg-item-row select { flex: 1; }
+  .pkg-item-row input { width: 74px; }
+
+  /* Категорії та підкатегорії */
+  .catrow { border-bottom: 1px solid rgba(35,40,57,.5); padding: 10px 6px; }
+  .catrow:last-child { border-bottom: 0; }
+  .cat-main { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .cat-main .catkey { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); width: 110px; flex-shrink: 0; }
+  .cat-main input { width: auto; }
+  .cat-main .cat-name { width: 220px; } .cat-main .cat-short { width: 130px; } .cat-main .cat-icon { width: 64px; }
+  .catcnt { font-size: 10.5px; color: var(--text-dim); white-space: nowrap; }
+  .subs { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; padding-left: 118px; align-items: center; }
+  .subchip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border2); padding: 3px 8px; font-size: 11px; color: var(--text-muted); }
+  .subchip button { background: none; border: 0; color: var(--text-dim); cursor: pointer; font-size: 12px; padding: 0; }
+  .subchip button:hover { color: var(--bad); }
+  .subadd { display: inline-flex; gap: 5px; align-items: center; }
+  .subadd input { width: 170px; }
+  .photo-prev { margin-top: 8px; border: 1px solid var(--border2); background: #0d1017; padding: 8px; display: flex; gap: 10px; align-items: center; }
+  .photo-prev img { max-width: 120px; max-height: 90px; object-fit: cover; display: block; }
+  .photo-prev span { font-size: 10.5px; color: var(--text-dim); }
+  .tier-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+  .tier-row .tr-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .tier-row input { width: 110px; }
+
+  /* Публікація / інструкції */
+  .steps { counter-reset: st; }
+  .step { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(35,40,57,.5); }
+  .step:last-child { border-bottom: 0; }
+  .step::before {
+    counter-increment: st; content: counter(st);
+    flex-shrink: 0; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    background: var(--accent); color: #141001; font-weight: 800; font-size: 11px;
+  }
+  .step b { display: block; font-size: 12px; }
+  .step p { font-size: 11.5px; color: var(--text-muted); }
+  .step code { font-family: var(--font-mono); font-size: 10.5px; background: #0e1119; border: 1px solid var(--border2); padding: 1px 5px; color: var(--accent); }
+
+  .toast {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--accent); color: #141001; font-weight: 800; font-size: 12px;
+    padding: 10px 18px; z-index: 600; transition: transform .25s ease; pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* GitHub-сховище */
+  .ghlog {
+    font-family: var(--font-mono); font-size: 11px; line-height: 1.65;
+    background: #0d1017; border: 1px solid var(--border2); padding: 10px 12px;
+    color: var(--text-muted); white-space: pre-wrap; word-break: break-word;
+    max-height: 230px; overflow-y: auto;
+  }
+  .ghlog .ok { color: var(--ok); }
+  .ghlog .bad { color: var(--bad); }
+  .ghlog .warn { color: var(--warn); }
+  .ghlog a { color: var(--accent); }
+  .gh-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .gh-note { font-size: 10.5px; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
+  .gh-note b { color: var(--text-muted); }
+
+  .empty-note { padding: 22px; text-align: center; color: var(--text-dim); font-size: 12px; }
+  .mb10 { margin-bottom: 10px; } .mb14 { margin-bottom: 14px; }
+</style>
+</head>
+
+<body>
+
+  <!-- ===== PIN-брама ===== -->
+  <div class="gate" id="gate">
+    <div class="gate-box">
+      <div class="gate-dots"><i style="background:var(--c)"></i><i style="background:var(--m)"></i><i style="background:var(--y)"></i><i style="background:var(--k)"></i></div>
+      <div class="gate-title">Адмінка <b>alfa.copy.print</b></div>
+      <div class="gate-sub">Керування каталогом і цінами друкарні. Введіть код доступу.</div>
+      <input type="password" class="gate-input" id="gatePin" placeholder="••••" maxlength="8" autocomplete="off">
+      <div class="gate-err" id="gateErr"></div>
+      <button class="abtn accent" style="width:100%;padding:9px" onclick="gateEnter()">Увійти</button>
+    </div>
+  </div>
+
+  <!-- ===== Шапка ===== -->
+  <header class="atop" id="app" style="display:none">
+    <div class="alogo">
+      <span class="alogo-dots"><i class="dotc"></i><i class="dotm"></i><i class="doty"></i><i class="dotk"></i></span>
+      alfa<span class="doty-text">.copy.</span>print
+    </div>
+    <span class="abadge">адмін-панель</span>
+    <span class="abadge" id="statCount">виробів: —</span>
+    <span class="abadge" id="statChanged">синхронізовано з сайтом</span>
+    <span class="abadge" id="statGh">GitHub: не підключено</span>
+    <div class="atop-right">
+      <button class="abtn" onclick="exportBackup()" title="Зберегти повну копію змін у JSON">Бекап</button>
+      <button class="abtn" onclick="document.getElementById('importFile').click()" title="Відновити з бекапу">Відновити</button>
+      <button class="abtn danger" onclick="factoryReset()" title="Повернути заводські дані сайту">Скинути</button>
+      <button class="abtn accent" onclick="openPublish()">Опублікувати</button>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(this)">
+  </header>
+
+  <div class="atabs" id="app2" style="display:none">
+    <button class="atab active" data-tab="prices" onclick="switchTab('prices')">Цінові таблиці</button>
+    <button class="atab" data-tab="products" onclick="switchTab('products')">Вироби (<span id="tabProdCount">—</span>)</button>
+    <button class="atab" data-tab="cats" onclick="switchTab('cats')">Категорії (<span id="tabCatCount">—</span>)</button>
+    <button class="atab" data-tab="gh" onclick="switchTab('gh')">GitHub</button>
+    <button class="atab" onclick="openEditor(-1)">Додати виріб</button>
+  </div>
+
+  <main id="app3" style="display:none">
+
+    <!-- ===== ТАБ 1: ЦІНОВІ ТАБЛИЦІ ===== -->
+    <section class="tabsec active" id="tab-prices">
+
+      <div class="grid3 mb14">
+        <div class="card">
+          <div class="sec-title">Аркуш А3 <span class="hint">спускополоса</span></div>
+          <table class="at"><tbody>
+            <tr><td class="rowkey">Ширина, мм</td><td class="cell-narrow"><input type="number" id="pr-sheet-w" data-pr="sheet.width" step="0.1"></td></tr>
+            <tr><td class="rowkey">Висота, мм</td><td class="cell-narrow"><input type="number" id="pr-sheet-h" data-pr="sheet.height" step="0.1"></td></tr>
+            <tr><td class="rowkey">Корисна ширина</td><td class="cell-narrow"><input type="number" id="pr-sheet-uw" data-pr="sheet.usableW" step="0.1"></td></tr>
+            <tr><td class="rowkey">Корисна висота</td><td class="cell-narrow"><input type="number" id="pr-sheet-uh" data-pr="sheet.usableH" step="0.1"></td></tr>
+            <tr><td class="rowkey">Виліжування, мм</td><td class="cell-narrow"><input type="number" id="pr-sheet-bleed" data-pr="sheet.bleed" step="0.1"></td></tr>
+          </tbody></table>
+        </div>
+        <div class="card">
+          <div class="sec-title">Допечатна підготовка <span class="hint">на сайті показується «+»</span></div>
+          <table class="at"><tbody>
+            <tr><td class="rowkey">Назва</td><td><input id="pr-prepress-name" data-pr="prepress.name"></td></tr>
+            <tr><td class="rowkey">Ціна, ₴ <span class="hint">(факт.)</span></td><td class="cell-narrow"><input type="number" id="pr-prepress-price" data-pr="prepress.price" step="1"></td></tr>
+            <tr><td class="rowkey">Включення блока, ₴ <span class="hint">постдрук/ламінація</span></td><td class="cell-narrow"><input type="number" id="pr-blocksetup" data-pr="blockSetup" step="1"></td></tr>
+          </tbody></table>
+          <div class="sec-title" style="margin-top:14px">Ламінація <span class="hint">₴/аркуш А3</span></div>
+          <table class="at"><tbody id="pr-lam"></tbody></table>
+        </div>
+        <div class="card">
+          <div class="sec-title">Постдрук <span class="hint">включення + ₴/шт</span></div>
+          <table class="at"><tbody id="pr-fin"></tbody></table>
+        </div>
+      </div>
+
+      <div class="sec-title">Тарифи друку, ₴/аркуш А3 <span class="hint">щаблі тиражу — «до N аркушів»</span></div>
+      <div class="grid2 mb14" id="pr-tiers"></div>
+
+      <div class="sec-title">Папери, ₴/аркуш А3 <span class="hint">Raflatac та Оракал — для наліпок</span></div>
+      <div class="card"><table class="at"><tbody id="pr-paper"></tbody></table></div>
+
+    </section>
+
+    <!-- ===== ТАБ 2: ВИРОБИ ===== -->
+    <section class="tabsec" id="tab-products">
+      <div class="pfilters">
+        <input id="psearch" placeholder="Пошук: назва або №042…" oninput="renderProducts()">
+        <select id="pcat" onchange="renderProducts()"></select>
+        <select id="psub" onchange="renderProducts()"></select>
+        <select id="pkind" onchange="renderProducts()">
+          <option value="all">Всі типи</option>
+          <option value="print">Друк (А3)</option>
+          <option value="merch">Мерч (готові вироби)</option>
+          <option value="package">Пакунки (комплекти)</option>
+          <option value="simple">Прості товари (широкоформатка, сувеніри)</option>
+        </select>
+      </div>
+      <div class="plist">
+        <div class="prow-head">
+          <span style="width:44px">№</span><span>Назва</span>
+          <span style="width:170px">Категорія / підкатегорія</span><span style="width:84px">Тип</span>
+          <span style="width:150px;text-align:right">Ціна</span><span style="width:180px"></span>
+        </div>
+        <div id="plist"></div>
+      </div>
+      <p style="font-size:10.5px;color:var(--text-dim);margin-top:8px">
+        Клік по рядку — калькулятор виробу (формат, папір, кольоровість, ціни мерчу, щаблі простого товару, склад пакунків).
+        Ціна в списку — живий прорахунок за дефолтними параметрами (друк — тираж 100, мерч — 10 шт, простий — мінімальний щабель, пакунок — 1 комплект).
+        Категорії та підкатегорії змінюються у редакторі виробу або в табі «Категорії».
+      </p>
+    </section>
+
+    <!-- ===== ТАБ 3: КАТЕГОРІЇ ТА ПІДКАТЕГОРІЇ ===== -->
+    <section class="tabsec" id="tab-cats">
+      <div class="sec-title">Категорії каталогу <span class="hint">назва, коротка назва для фільтра, символ для сайту; підкатегорії — під кожною категорією</span></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="abtn accent" onclick="addCategory()">Додати категорію</button>
+        <span style="font-size:10.5px;color:var(--text-dim);align-self:center">Ключ (латиницею) створюється автоматично; зміни потрапляють на сайт після «Опублікувати».</span>
+      </div>
+      <div class="card"><div id="catsList"></div></div>
+      <p style="font-size:10.5px;color:var(--text-dim);margin-top:8px">
+        Категорію, яку використовує хоч один виріб, видалити не можна — спершу переведіть вироби в іншу категорію.
+        Підкатегорії допомагають розкласти каталог (наприклад «Рол-апи», «Стенди», «Банери») і будуть показані у фільтрах сайту.
+      </p>
+    </section>
+
+    <!-- ===== ТАБ 4: GITHUB — СХОВИЩЕ САЙТУ Й АДМІНКИ ===== -->
+    <section class="tabsec" id="tab-gh">
+      <div class="grid2">
+        <div class="card">
+          <div class="sec-title">Сховище GitHub <span class="hint">репозиторій сайту — дані й фото зберігаються сюди автоматично</span></div>
+          <table class="at"><tbody>
+            <tr><td class="rowkey">Репозиторій</td><td><input id="gh-repo" placeholder="lavandaaudit/alfa.copy.print"></td></tr>
+            <tr><td class="rowkey">Гілка</td><td><input id="gh-branch" placeholder="main — визначиться автоматично"></td></tr>
+            <tr><td class="rowkey">Токен</td><td><input id="gh-token" type="password" placeholder="github_pat_… — зберігається лише у вашому браузері" autocomplete="off"></td></tr>
+            <tr><td class="rowkey">Папка фото</td><td><input id="gh-dir" placeholder="photos"></td></tr>
+          </tbody></table>
+          <div class="gh-row">
+            <button class="abtn accent" onclick="ghTest()">Перевірити з'єднання</button>
+            <button class="abtn" onclick="ghPull()">Завантажити дані з GitHub</button>
+            <button class="abtn" onclick="ghToggleToken()">Показати токен</button>
+          </div>
+          <div class="gh-note">
+            Як зробити токен: GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → Generate new token →
+            Repository access: <b>Only select repositories → alfa.copy.print</b> → Permissions → Contents: <b>Read and write</b>.
+            Токен зберігається у вашому браузері і надсилається лише напряму на api.github.com.
+          </div>
+        </div>
+        <div class="card">
+          <div class="sec-title">Журнал</div>
+          <div class="ghlog" id="gh-log">Готово. Вставте токен і натисніть «Перевірити з'єднання».</div>
+          <div class="sec-title" style="margin-top:14px">Як це працює</div>
+          <div class="steps">
+            <div class="step"><div><b>Ціни й вироби — «Опублікувати» → «Зберегти на GitHub»</b>
+              <p>Адмінка сама закомітить <code>catalog-override.js</code> у репозиторій. Сайт підтягне свіжі дані звідти автоматично (кеш до ~1 хвилини).</p></div></div>
+            <div class="step"><div><b>Фото — завантажуються самі</b>
+              <p>У редакторі виробу кнопка «Завантажити на GitHub» відправляє файл у папку <code>photos/</code> і одразу вставляє пряме посилання у виріб.</p></div></div>
+            <div class="step"><div><b>Робота з іншого пристрою</b>
+              <p>Відкрийте адмінку, вставте той самий токен і натисніть «Завантажити дані з GitHub» — усі ціни, вироби й категорії приїдуть зі сховища.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== РЕДАКТОР ВИРОБУ (калькулятор) ===== -->
+  <div class="modal-ov" id="editorOv">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="edTitle">Виріб</div>
+          <div class="modal-sub" id="edSub">—</div>
+        </div>
+        <button class="modal-x" onclick="closeEditor()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 330px;gap:16px" id="edWrap">
+          <div id="edForm"></div>
+          <div class="preview" id="edPreview" style="position:sticky;top:60px;align-self:start"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+          <button class="abtn" onclick="closeEditor()">Скасувати</button>
+          <button class="abtn accent" onclick="saveEditor()">Зберегти виріб</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ПУБЛІКАЦІЯ ===== -->
+  <div class="modal-ov" id="pubOv">
+    <div class="modal narrow">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">Публікація змін на сайт</div>
+          <div class="modal-sub">сховище GitHub — сайт підтягує дані автоматично</div>
+        </div>
+        <button class="modal-x" onclick="closeModal('pubOv')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="steps mb14" id="pubSteps">
+          <div class="step">
+            <div><b>Зберегти на GitHub</b>
+            <p>Файл <code>catalog-override.js</code> із вашими цінами, виробами і категоріями одразу комітиться у репозиторій. Сайт підтягує його звідти сам — нічого перезаливати не треба.</p></div>
+          </div>
+          <div class="step">
+            <div><b>Фото завантажуються самі</b>
+            <p>У редакторі виробу кнопка «Завантажити на GitHub» кладе фото у папку <code>photos/</code> і вставляє пряме посилання у калькулятор.</p></div>
+          </div>
+          <div class="step">
+            <div><b>Ручний варіант (без токена)</b>
+            <p>Кнопка «Завантажити файл» — покладіть <code>catalog-override.js</code> поруч з index.html на сайті.</p></div>
+          </div>
+        </div>
+        <div class="ghlog mb14" id="pubLog" style="display:none"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+          <button class="abtn" onclick="closeModal('pubOv')">Пізніше</button>
+          <button class="abtn" onclick="downloadOverride()">Завантажити файл</button>
+          <button class="abtn accent" id="pubGhBtn" onclick="ghPublish()">Зберегти на GitHub</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   АДМІНКА alfa.copy.print — керування каталогом і цінами.
+   Дані: FACTORY = заводський стан сайту (згенеровано з catalog-data).
+   Зміни живуть у localStorage; «Опублікувати» видає catalog-override.js,
+   який сайт автоматично застосовує поверх своїх даних.
+   ============================================================ */
+
+/* --- Код доступу (ЗМІНІТЬ на свій — це легкий замок, не сейф) --- */
+const ADMIN_PIN = '2294';
+
+/* --- Категорії (заводські; далі керуються у табі «Категорії» і публікуються з сайтом) --- */
+const CATS = [
+  ['polygraphy', 'Візитки'], ['advertising', 'Реклама'], ['stickers', 'Наклейки'],
+  ['posters', 'Плакати'], ['booklets', 'Буклети'], ['office', 'Офіс'],
+  ['gifts', 'Подарунки'], ['merch', 'Мерч'], ['packages', 'Пакунки'],
+];
+const KIND_LABEL = { print: 'Друк А3', merch: 'Мерч', package: 'Пакунок', simple: 'Простий' };
+
+/* Палітра для НОВИХ категорій (сайт фарбує квадрати номерів за категорією) */
+const CAT_PALETTE = ['#38bdf8', '#fbbf24', '#f87171', '#a78bfa', '#34d399', '#94a3b8', '#f472b6', '#fb923c', '#22d3ee', '#e879f9', '#4ade80', '#facc15'];
+
+/* --- Заводські дані (генерується build-скриптом) --- */
+const FACTORY = {"prices":{"blockSetup":500,"prepress":{"name":"Допечатна підготовка макету","price":500},"sheet":{"width":297,"height":420,"usableW":291,"usableH":414,"bleed":2},"printTiers":{"1+0":[{"max":10,"price":3.2},{"max":50,"price":2.4},{"max":100,"price":1.9},{"max":250,"price":1.6},{"max":500,"price":1.4},{"max":1000,"price":1.3},{"max":null,"price":1.2}],"1+1":[{"max":10,"price":5.5},{"max":50,"price":4.3},{"max":100,"price":3.5},{"max":250,"price":2.9},{"max":500,"price":2.5},{"max":1000,"price":2.2},{"max":null,"price":2}],"4+0":[{"max":10,"price":18},{"max":50,"price":14.5},{"max":100,"price":12},{"max":250,"price":9.8},{"max":500,"price":8.2},{"max":1000,"price":7},{"max":null,"price":6.2}],"4+4":[{"max":10,"price":32},{"max":50,"price":26},{"max":100,"price":21.5},{"max":250,"price":17.5},{"max":500,"price":14.5},{"max":1000,"price":12.5},{"max":null,"price":11}]},"paper":{"offset_80":{"name":"80 г/м² Офсетний","price":1.2},"coated_115":{"name":"115 г/м² Крейдований","price":2.1},"coated_130":{"name":"130 г/м² Крейдований","price":2.4},"coated_150":{"name":"150 г/м² Крейдований","price":2.8},"coated_170":{"name":"170 г/м² Крейдований","price":3.2},"coated_200":{"name":"200 г/м² Крейдований","price":3.8},"coated_250":{"name":"250 г/м² Крейдований","price":4.5},"coated_300":{"name":"300 г/м² Крейдований","price":5.4},"coated_350":{"name":"350 г/м² Преміум картон","price":6.5},"kraft_200":{"name":"200 г/м² Крафт бурий","price":5},"design_300":{"name":"300 г/м² Дизайнерський картон","price":18},"selfadhesive_paper":{"name":"Самоклейка Raflatac (папір)","price":12},"selfadhesive_vinyl":{"name":"Плівка Оракал (вініл)","price":24}},"lamination":{"none":{"name":"Без ламінації","price":0},"matte_10":{"name":"Матова 1+0","price":8.5},"matte_11":{"name":"Матова 1+1","price":15},"gloss_10":{"name":"Глянцева 1+0","price":7},"gloss_11":{"name":"Глянцева 1+1","price":12},"softtouch_10":{"name":"Soft-Touch 1+0","price":14},"softtouch_11":{"name":"Soft-Touch 1+1","price":26}},"finishing":{"scoring":{"name":"Біговка","price":0.6,"setup":500},"folding":{"name":"Фальцювання","price":0.5,"setup":500},"corners":{"name":"Скруглення кутів","price":0.5,"setup":500},"hole":{"name":"Свердління отвору","price":2.5,"setup":500},"staples":{"name":"Скоби","price":2,"setup":500},"spring":{"name":"Пружина","price":32,"setup":500},"plotter":{"name":"Плотерна висічка","price":0.7,"setup":500},"perforation":{"name":"Перфорація","price":0.45,"setup":500}}},"productsCatalog":[{"id":"business-card-standard","name":"Візитка стандарт (90×50)","category":"polygraphy","icon":"💳","desc":"Класична ділова візитка на щільному картоні 350 г/м² з ідеальною геометрією різу.","defaultW":90,"defaultH":50,"defaultPaper":"coated_350","allowedPapers":["coated_350","coated_300","design_300","kraft_200"],"defaultColor":"4+0","minQty":100,"priceFrom":"6,25"},{"id":"business-card-euro","name":"Візитка Євро (85×55)","category":"polygraphy","icon":"💶","desc":"Європейський стандарт під гаманці та міжнародні виставки.","defaultW":85,"defaultH":55,"defaultPaper":"coated_350","allowedPapers":["coated_350","coated_300","design_300"],"defaultColor":"4+4","minQty":100,"priceFrom":"6,95"},{"id":"business-card-softtouch","name":"Візитка Soft-Touch Преміум","category":"polygraphy","icon":"✨","desc":"Оксамитова тактильна ламінація «шовковистий дотик» 350 г/м².","defaultW":90,"defaultH":50,"defaultPaper":"coated_350","allowedPapers":["coated_350"],"defaultColor":"4+4","defaultLam":"softtouch_11","minQty":100,"priceFrom":"13,00"},{"id":"business-card-rounded","name":"Візитка зі скругленими кутами","category":"polygraphy","icon":"🔄","desc":"Скруглені 4 кути (радіус 3 або 5 мм) проти загинання в кишені.","defaultW":90,"defaultH":50,"defaultPaper":"coated_350","allowedPapers":["coated_350","coated_300"],"defaultColor":"4+4","defaultCorners":true,"minQty":100,"priceFrom":"12,00"},{"id":"business-card-double-fold","name":"Візитка подвійна зі згином","category":"polygraphy","icon":"📖","desc":"Розмір 180×50 мм складається до 90×50 мм, 4 робочі сторони з біговкою.","defaultW":180,"defaultH":50,"defaultPaper":"coated_350","allowedPapers":["coated_350","coated_300"],"defaultColor":"4+4","defaultScoring":true,"minQty":100,"priceFrom":"14,00"},{"id":"business-card-vertical-fold","name":"Візитка-книжечка вертикальна","category":"polygraphy","icon":"📑","desc":"Розгортка 90×100 мм з біговкою, складається вертикально до 90×50 мм.","defaultW":90,"defaultH":100,"defaultPaper":"coated_350","allowedPapers":["coated_350","coated_300"],"defaultColor":"4+4","defaultScoring":true,"minQty":100,"priceFrom":"14,00"},{"id":"business-card-kraft","name":"Візитка Еко-Крафт (200 г/м²)","category":"polygraphy","icon":"🌿","desc":"Автентичний бурий крафт для кав'ярень, майстерень та еко-брендів.","defaultW":90,"defaultH":50,"defaultPaper":"kraft_200","allowedPapers":["kraft_200"],"defaultColor":"1+0","minQty":100,"priceFrom":"5,45"},{"id":"business-card-designer","name":"Візитка на дизайнерському картоні","category":"polygraphy","icon":"💎","desc":"Фактурний картон «льон» або білий перламутр Majestic 300 г/м².","defaultW":90,"defaultH":50,"defaultPaper":"design_300","allowedPapers":["design_300"],"defaultColor":"4+0","minQty":50,"priceFrom":"12,00"},{"id":"business-card-mini-strip","name":"Міні-візитка / смужка (85×25)","category":"polygraphy","icon":"🏷️","desc":"Нестандартний вузький формат для творчих студій, ювелірів та фотографів.","defaultW":85,"defaultH":25,"defaultPaper":"coated_350","allowedPapers":["coated_350","coated_300"],"defaultColor":"4+4","minQty":100,"priceFrom":"6,20"},{"id":"tag-clothing","name":"Бірка навісна для одягу","category":"polygraphy","icon":"🏷️","desc":"Розмір 50×90 мм на 350 г/м² зі свердлінням отвору 4 мм під нитку або пломбу.","defaultW":50,"defaultH":90,"defaultPaper":"coated_350","allowedPapers":["coated_350","kraft_200","design_300"],"defaultColor":"4+4","defaultHole":true,"minQty":100,"priceFrom":"14,00"},{"id":"tag-rounded-hole","name":"Бірка кругла з отвором (Ø50 мм)","category":"polygraphy","icon":"🔘","desc":"Кругла плотерна висічка діаметром 50 мм з отвором 3-5 мм по центру краю.","defaultW":50,"defaultH":50,"defaultPaper":"coated_350","allowedPapers":["coated_350"],"defaultColor":"4+4","defaultPlotter":true,"defaultHole":true,"minQty":100,"priceFrom":"19,00"},{"id":"tag-jewelry-mini","name":"Ювелірна бірка міні (40×20)","category":"polygraphy","icon":"💍","desc":"Мініатюрний ярлик 40×20 мм зі свердлінням отвору 2 мм для пломбування прикрас.","defaultW":40,"defaultH":20,"defaultPaper":"coated_350","allowedPapers":["coated_350"],"defaultColor":"4+0","defaultHole":true,"minQty":200,"priceFrom":"7,75"},{"id":"price-tag-retail","name":"Цінник акційний вітринний (70×100)","category":"polygraphy","icon":"🏷️","desc":"Яскравий цінник акцій 'Sale / Знижка' на цупкому папері 250 г/м².","defaultW":70,"defaultH":100,"defaultPaper":"coated_250","allowedPapers":["coated_200","coated_250","coated_300"],"defaultColor":"4+0","minQty":100,"priceFrom":"6,60"},{"id":"flyer-euro","name":"Єврофлаєр (99×210)","category":"advertising","icon":"📄","desc":"Лідер промо-поліграфії: 6 штук на 1 аркуші А3, двосторонній повноколір.","defaultW":99,"defaultH":210,"defaultPaper":"coated_130","allowedPapers":["coated_115","coated_130","coated_150","coated_170","coated_250"],"defaultColor":"4+4","minQty":100,"priceFrom":"9,85"},{"id":"flyer-a6","name":"Флаєр А6 (105×148)","category":"advertising","icon":"📑","desc":"Зручний кишеньковий розмір: рівно 8 штук на 1 аркуші А3 без залишків.","defaultW":105,"defaultH":148,"defaultPaper":"coated_130","allowedPapers":["coated_115","coated_130","coated_150","coated_200"],"defaultColor":"4+0","minQty":100,"priceFrom":"7,20"},{"id":"flyer-a5","name":"Флаєр А5 (148×210)","category":"advertising","icon":"📋","desc":"Універсальний інформаційний лист для меню доставки, презентацій та роздачі.","defaultW":148,"defaultH":210,"defaultPaper":"coated_130","allowedPapers":["coated_115","coated_130","coated_150","coated_170","coated_250"],"defaultColor":"4+4","minQty":100,"priceFrom":"12,00"},{"id":"flyer-a7-mini","name":"Міні-флаєр А7 (74×105)","category":"advertising","icon":"🎟️","desc":"Вкладиш у посилки та пакети з промокодом на повторну покупку.","defaultW":74,"defaultH":105,"defaultPaper":"coated_130","allowedPapers":["coated_130","coated_150"],"defaultColor":"4+0","minQty":100,"priceFrom":"6,45"},{"id":"flyer-square-105","name":"Флаєр квадратний (105×105)","category":"advertising","icon":"🔲","desc":"Сучасний формат під квадратну графіку Instagram та арт-події.","defaultW":105,"defaultH":105,"defaultPaper":"coated_150","allowedPapers":["coated_130","coated_150","coated_200"],"defaultColor":"4+4","minQty":100,"priceFrom":"9,90"},{"id":"flyer-panorama-narrow","name":"Флаєр панорамний вузький (70×210)","category":"advertising","icon":"📏","desc":"Витягнутий промо-купон для меню барів, переліку послуг або знижок.","defaultW":70,"defaultH":210,"defaultPaper":"coated_150","allowedPapers":["coated_130","coated_150","coated_200"],"defaultColor":"4+4","minQty":100,"priceFrom":"11,00"},{"id":"coupon-perforated","name":"Купон зі знижкою та перфорацією","category":"advertising","icon":"🎫","desc":"Розмір 70×140 мм з пунктирною лінією легкого відриву для корінця знижки.","defaultW":70,"defaultH":140,"defaultPaper":"coated_150","allowedPapers":["coated_130","coated_150","coated_200"],"defaultColor":"4+4","defaultPerforation":true,"minQty":100,"priceFrom":"14,00"},{"id":"ticket-numbered","name":"Вхідний квиток з контролем (50×150)","category":"advertising","icon":"🎟️","desc":"Квиток для концертів, клубів та конференцій з відривним полем перевірки.","defaultW":50,"defaultH":150,"defaultPaper":"coated_150","allowedPapers":["coated_150","coated_200"],"defaultColor":"4+0","defaultPerforation":true,"minQty":100,"priceFrom":"13,00"},{"id":"doorhanger-hotel","name":"Дорхенгер на дверну ручку","category":"advertising","icon":"🚪","desc":"Підвіс 90×200 мм з круглим гачком для готелів, ЖК та адресної доставки.","defaultW":90,"defaultH":200,"defaultPaper":"coated_300","allowedPapers":["coated_300","coated_350"],"defaultColor":"4+4","defaultPlotter":true,"minQty":100,"priceFrom":"16,00"},{"id":"neckhanger-bottle","name":"Некхенгер на шийку пляшки (60×140)","category":"advertising","icon":"🍾","desc":"Підвісна картка з отвором 35 мм для вин, оливкової олії та преміум напоїв.","defaultW":60,"defaultH":140,"defaultPaper":"coated_300","allowedPapers":["coated_300","coated_350"],"defaultColor":"4+0","defaultPlotter":true,"minQty":100,"priceFrom":"13,00"},{"id":"wobbler-promo","name":"Воблер рекламний (100×100)","category":"advertising","icon":"🎯","desc":"Реклама на гнучкій ніжці, що тремтить від повітря біля товару на полиці.","defaultW":100,"defaultH":100,"defaultPaper":"coated_300","allowedPapers":["coated_300","coated_350"],"defaultColor":"4+0","defaultPlotter":true,"minQty":50,"priceFrom":"24,00"},{"id":"shelftalker","name":"Шелфтокер вітринний (200×60)","category":"advertising","icon":"📐","desc":"Поличковий рекламний бортик з біговкою під край торгового стелажу.","defaultW":200,"defaultH":60,"defaultPaper":"coated_300","allowedPapers":["coated_250","coated_300"],"defaultColor":"4+0","defaultScoring":true,"minQty":50,"priceFrom":"24,00"},{"id":"table-tent-a5","name":"Тейбл-тент тригранний (будиночок)","category":"advertising","icon":"⛺","desc":"Настільна табличка 100×210 мм з 3 біговками для стійок адміністратора та барів.","defaultW":210,"defaultH":297,"defaultPaper":"coated_300","allowedPapers":["coated_300","coated_350"],"defaultColor":"4+0","defaultScoring":true,"minQty":25,"priceFrom":"51,00"},{"id":"sticker-a6","name":"Наклейка прямокутна А6 (105×148)","category":"stickers","icon":"🏷️","desc":"Самоклейка Raflatac з насічками для легкого відділення від підкладки.","defaultW":105,"defaultH":148,"defaultPaper":"selfadhesive_paper","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","minQty":50,"priceFrom":"14,00"},{"id":"sticker-a7","name":"Наклейка маркувальна А7 (74×105)","category":"stickers","icon":"📦","desc":"Популярна адресна етикетка для Нової Пошти, пакування та коробок.","defaultW":74,"defaultH":105,"defaultPaper":"selfadhesive_paper","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","minQty":50,"priceFrom":"12,00"},{"id":"sticker-square-50","name":"Наклейка квадратна 50×50","category":"stickers","icon":"🟨","desc":"Брендована наклейка на пакувальний папір, крафт-пакети та бокси.","defaultW":50,"defaultH":50,"defaultPaper":"selfadhesive_paper","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","minQty":100,"priceFrom":"5,90"},{"id":"sticker-round-plotter","name":"Наклейка кругла з контурною різкою (Ø50)","category":"stickers","icon":"🟡","desc":"Високоточна плотерна порізка до підкладки за круглим вектором будь-якого діаметра.","defaultW":50,"defaultH":50,"defaultPaper":"selfadhesive_vinyl","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","defaultPlotter":true,"minQty":100,"priceFrom":"12,00"},{"id":"sticker-coffee-cup","name":"Наклейка на стаканчик для кави (Ø45)","category":"stickers","icon":"☕","desc":"Кругла вологостійка наклейка на одноразові крафтові стакани.","defaultW":45,"defaultH":45,"defaultPaper":"selfadhesive_vinyl","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","defaultPlotter":true,"minQty":100,"priceFrom":"12,00"},{"id":"stickerpack-a5","name":"Стікерпак А5 з контурною висічкою","category":"stickers","icon":"🎨","desc":"Аркуш А5 з набором фігурних стікерів на вологостійкій білій вініловій плівці.","defaultW":148,"defaultH":210,"defaultPaper":"selfadhesive_vinyl","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","defaultPlotter":true,"minQty":25,"priceFrom":"52,00"},{"id":"stickerpack-a4","name":"Стікерпак А4 великий","category":"stickers","icon":"🖼️","desc":"Повноформатний набір брендових або фанових стікерів з плотерною висічкою.","defaultW":210,"defaultH":297,"defaultPaper":"selfadhesive_vinyl","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","defaultPlotter":true,"minQty":20,"priceFrom":"72,00"},{"id":"bottle-label-wine","name":"Етикетка для пляшок вина / соусів (90×120)","category":"stickers","icon":"🍾","desc":"Плівка з підвищеною адгезією, стійка до конденсату та охолодження у воді.","defaultW":90,"defaultH":120,"defaultPaper":"selfadhesive_vinyl","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","minQty":100,"priceFrom":"9,65"},{"id":"honey-jar-label","name":"Етикетка крафтова для банок меду (60×80)","category":"stickers","icon":"🍯","desc":"Натуральний паперовий стікер з просічкою для баночок джему та крафтових десертів.","defaultW":60,"defaultH":80,"defaultPaper":"selfadhesive_paper","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","minQty":100,"priceFrom":"6,50"},{"id":"candle-cosmetic-label","name":"Етикетка для свічок та косметики (50×70)","category":"stickers","icon":"🕯️","desc":"Термостійка етикетка з матовою або глянцевою плівкою на скляні ємності.","defaultW":50,"defaultH":70,"defaultPaper":"selfadhesive_vinyl","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","minQty":100,"priceFrom":"6,70"},{"id":"barcode-thermal-label","name":"Маркувальний стікер зі штрихкодом (40×25)","category":"stickers","icon":"🏷️","desc":"Чіткий контрастний друк 1+0 для сканування сканерами Rozetka, Prom, Amazon.","defaultW":40,"defaultH":25,"defaultPaper":"selfadhesive_paper","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"1+0","minQty":250,"priceFrom":"2,20"},{"id":"warranty-void-seal","name":"Гарантійна пломба / стікер контролю (40×20)","category":"stickers","icon":"🔒","desc":"Захисний стікер для опечатування електроніки, коробок або пакетів доставки.","defaultW":40,"defaultH":20,"defaultPaper":"selfadhesive_paper","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"1+0","minQty":200,"priceFrom":"2,65"},{"id":"poster-a3","name":"Плакат А3 (297×420)","category":"posters","icon":"🖼️","desc":"Базовий формат нашої цифрової машини: друк 1 до 1 на 170 г/м² з ідеальною насиченістю.","defaultW":297,"defaultH":420,"defaultPaper":"coated_170","allowedPapers":["coated_130","coated_150","coated_170","coated_200"],"defaultColor":"4+0","minQty":25,"priceFrom":"38,00"},{"id":"poster-a4","name":"Плакат А4 (210×297)","category":"posters","icon":"📑","desc":"Оптимальний постер для офісних дошок оголошень, вітрин та закладів.","defaultW":210,"defaultH":297,"defaultPaper":"coated_170","allowedPapers":["coated_130","coated_150","coated_170","coated_200"],"defaultColor":"4+0","minQty":25,"priceFrom":"29,00"},{"id":"afisha-event-a3","name":"Афіша подій / концертів А3","category":"posters","icon":"🎭","desc":"Яскравий настінний плакат на економічному глянцевому папері 130 г/м².","defaultW":297,"defaultH":420,"defaultPaper":"coated_130","allowedPapers":["coated_115","coated_130","coated_150"],"defaultColor":"4+0","minQty":25,"priceFrom":"37,00"},{"id":"poster-photo-a3-laminated","name":"Фотопостер А3 преміум з ламінацією","category":"posters","icon":"📸","desc":"Повноколірний фотодрук на 200 г/м² з матовою антивідблисковою ламінацією.","defaultW":297,"defaultH":420,"defaultPaper":"coated_200","allowedPapers":["coated_200","coated_250"],"defaultColor":"4+0","defaultLam":"matte_10","minQty":25,"priceFrom":"67,00"},{"id":"schedule-poster-a4","name":"Афіша розкладу / графік роботи А4","category":"posters","icon":"🕒","desc":"Інформаційний лист 210×297 мм з ламінацією для вхідних дверей магазинів та клінік.","defaultW":210,"defaultH":297,"defaultPaper":"coated_250","allowedPapers":["coated_200","coated_250"],"defaultColor":"4+0","defaultLam":"gloss_10","minQty":10,"priceFrom":"115,00"},{"id":"educational-chart-a3","name":"Навчальний плакат / схема А3","category":"posters","icon":"🗺️","desc":"Деталізовані технічні інструкції, карти або навчальні посібники на 170 г/м².","defaultW":297,"defaultH":420,"defaultPaper":"coated_170","allowedPapers":["coated_150","coated_170","offset_80"],"defaultColor":"4+0","minQty":25,"priceFrom":"38,00"},{"id":"booklet-1fold-a4","name":"Буклет 1 згин (А4 -> А5)","category":"booklets","icon":"📘","desc":"Розгортка А4 (297×210 мм), 1 біговка по лінії згину, 4 повноколірні сторінки.","defaultW":210,"defaultH":297,"defaultPaper":"coated_150","allowedPapers":["coated_130","coated_150","coated_170"],"defaultColor":"4+4","defaultScoring":true,"minQty":50,"priceFrom":"35,00"},{"id":"eurobooklet-2fold","name":"Євробуклет 2 згини (ліфлет)","category":"booklets","icon":"📖","desc":"Аркуш 297×210 мм, 2 паралельні біговки до формату 99×210 мм (гармошка / намотка).","defaultW":210,"defaultH":297,"defaultPaper":"coated_130","allowedPapers":["coated_130","coated_150"],"defaultColor":"4+4","defaultScoring":true,"minQty":50,"priceFrom":"35,00"},{"id":"booklet-accordion-3fold","name":"Буклет-гармошка 3 згини (4 секції)","category":"booklets","icon":"📂","desc":"Довгий інформаційний буклет 396×210 мм, що складається у 4 стулки 99×210 мм.","defaultW":210,"defaultH":396,"defaultPaper":"coated_150","allowedPapers":["coated_130","coated_150"],"defaultColor":"4+4","defaultScoring":true,"minQty":50,"priceFrom":"49,00"},{"id":"brochure-a5-staple","name":"Брошура А5 на 2 скоби (8 стор.)","category":"booklets","icon":"📚","desc":"Компактний каталог або інструкція на 2 металеві скоби, 8 кольорових сторінок. Самокришка.","defaultW":148,"defaultH":210,"defaultPaper":"coated_150","allowedPapers":["coated_130","coated_150"],"defaultColor":"4+4","defaultStaples":true,"pages":8,"pageStep":4,"selfCover":true,"minQty":25,"priceFrom":"71,00"},{"id":"brochure-a4-staple","name":"Брошура А4 на 2 скоби (12 стор.)","category":"booklets","icon":"📑","desc":"Презентаційний корпоративний звіт або каталог товарів у повному форматі А4. Самокришка.","defaultW":210,"defaultH":297,"defaultPaper":"coated_150","allowedPapers":["coated_150","coated_170"],"defaultColor":"4+4","defaultStaples":true,"pages":12,"pageStep":4,"selfCover":true,"minQty":25,"priceFrom":"115,00"},{"id":"catalog-multipage","name":"Каталог продукції 16 стор. А4","category":"booklets","icon":"📕","desc":"Повноцінний виробничий каталог товарів з цінами та технічними характеристиками. Самокришка.","defaultW":210,"defaultH":297,"defaultPaper":"coated_150","allowedPapers":["coated_130","coated_150"],"defaultColor":"4+4","defaultStaples":true,"pages":16,"pageStep":4,"selfCover":true,"minQty":25,"priceFrom":"139,00"},{"id":"catalog-a5-spring-40p","name":"Каталог А5 на металевій пружині (40 стор.)","category":"booklets","icon":"📒","desc":"Зручний гортальний альбом на міцній пружині з обкладинкою 300 г і матовою ламінацією.","defaultW":148,"defaultH":210,"defaultPaper":"coated_130","allowedPapers":["coated_130","coated_150"],"defaultColor":"4+4","defaultSpring":true,"pages":40,"pageStep":2,"coverPaper":"coated_300","coverColor":"4+4","coverLam":"matte_10","minQty":10,"priceFrom":"347,00"},{"id":"user-manual-fold","name":"Інструкція користувача гармошкою (А4)","category":"booklets","icon":"📝","desc":"Економічна інструкція 1+1 на 80г офсетному папері з машинним фальцюванням.","defaultW":210,"defaultH":297,"defaultPaper":"offset_80","allowedPapers":["offset_80","coated_115"],"defaultColor":"1+1","defaultScoring":true,"minQty":100,"priceFrom":"13,00"},{"id":"certificate-a4","name":"Сертифікат А4 (210×297)","category":"office","icon":"🏆","desc":"Офіційний нагородний документ або кваліфікаційний диплом на картоні 300 г/м².","defaultW":210,"defaultH":297,"defaultPaper":"coated_300","allowedPapers":["coated_300","coated_350","design_300"],"defaultColor":"4+0","minQty":25,"priceFrom":"30,00"},{"id":"certificate-a5","name":"Сертифікат А5 подарунковий","category":"office","icon":"🎖️","desc":"Формат 148×210 мм для студій краси, фітнес-клубів, СПА та ювелірних салонів.","defaultW":148,"defaultH":210,"defaultPaper":"coated_300","allowedPapers":["coated_300","coated_350","design_300"],"defaultColor":"4+4","minQty":25,"priceFrom":"30,00"},{"id":"diploma-a4","name":"Диплом / Грамота А4","category":"office","icon":"📜","desc":"Нагородний лист учасникам конкурсів, олімпіад та спортивних змагань.","defaultW":210,"defaultH":297,"defaultPaper":"coated_350","allowedPapers":["coated_300","coated_350","design_300"],"defaultColor":"4+0","minQty":25,"priceFrom":"31,00"},{"id":"presentation-spring","name":"Презентація на пружину А4 (20 стор.)","category":"office","icon":"📊","desc":"Зшивка на металеву пружину з обкладинкою 300 г у матовій ламінації та цупким зворотом.","defaultW":210,"defaultH":297,"defaultPaper":"coated_150","allowedPapers":["coated_150","coated_170","offset_80"],"defaultColor":"4+0","defaultSpring":true,"pages":20,"pageStep":2,"coverPaper":"coated_300","coverColor":"4+0","coverLam":"matte_10","minQty":10,"priceFrom":"362,00"},{"id":"notebook-spring-a5","name":"Блокнот на пружині А5 (50 арк.)","category":"office","icon":"📓","desc":"Брендована обкладинка 300 г/м² з ламінацією + внутрішній блок 50 аркушів (100 стор.) на пружині.","defaultW":148,"defaultH":210,"defaultPaper":"offset_80","allowedPapers":["offset_80","coated_115"],"defaultColor":"1+1","defaultSpring":true,"pages":100,"pageStep":2,"coverPaper":"coated_300","coverColor":"4+0","coverLam":"matte_10","minQty":25,"priceFrom":"155,00"},{"id":"notebook-spring-a6","name":"Блокнот кишеньковий А6 на пружині (40 арк.)","category":"office","icon":"📔","desc":"Компактний нотатник для конференцій та тренінгів: обкладинка 300 г, блок 40 аркушів (80 стор.).","defaultW":105,"defaultH":148,"defaultPaper":"offset_80","allowedPapers":["offset_80","coated_115"],"defaultColor":"1+1","defaultSpring":true,"pages":80,"pageStep":2,"coverPaper":"coated_300","coverColor":"4+0","minQty":25,"priceFrom":"99,00"},{"id":"memo-cube-pad","name":"Кубарик для записів (90×90, 100 арк.)","category":"office","icon":"🧊","desc":"Блок із 100 аркушів 80 г офсету з проклеюванням по одному торцю для швидких заміток.","defaultW":90,"defaultH":90,"defaultPaper":"offset_80","allowedPapers":["offset_80"],"defaultColor":"4+0","pages":100,"pageStep":25,"selfCover":true,"minQty":25,"priceFrom":"119,00"},{"id":"letterhead-a4","name":"Бланк фірмовий А4","category":"office","icon":"📄","desc":"Корпоративний бланк для наказів, комерційних пропозицій та листів на 80г офсеті.","defaultW":210,"defaultH":297,"defaultPaper":"offset_80","allowedPapers":["offset_80"],"defaultColor":"4+0","minQty":100,"priceFrom":"13,00"},{"id":"envelope-c65","name":"Конверт фірмовий Євро С65 (110×220)","category":"office","icon":"✉️","desc":"Друк логотипу та контактів на поштових конвертах під складений лист А4 утричі.","defaultW":110,"defaultH":220,"defaultPaper":"offset_80","allowedPapers":["offset_80"],"defaultColor":"4+0","minQty":50,"priceFrom":"15,00"},{"id":"badge-conference","name":"Бейдж для конференцій (85×120)","category":"office","icon":"🪪","desc":"Персоналізована картка з матовою ламінацією та овальним отвором під карабін ланцюжка.","defaultW":85,"defaultH":120,"defaultPaper":"coated_300","allowedPapers":["coated_300","coated_350"],"defaultColor":"4+4","defaultLam":"matte_11","defaultHole":true,"minQty":50,"priceFrom":"39,00"},{"id":"corporate-folder-a4","name":"Папка фірмова висічна під А4","category":"office","icon":"📁","desc":"Картонна папка 350 г/м² з кишенею для документів та прорізами під візитку.","defaultW":297,"defaultH":420,"defaultPaper":"coated_350","allowedPapers":["coated_350"],"defaultColor":"4+0","defaultLam":"matte_10","defaultPlotter":true,"minQty":25,"priceFrom":"90,00"},{"id":"menu-a4-laminated","name":"Меню для ресторану А4 (ламіноване)","category":"office","icon":"🍽️","desc":"Повноколірне меню з щільною двосторонньою матовою ламінацією 30 мкм проти плям та вологи.","defaultW":210,"defaultH":297,"defaultPaper":"coated_300","allowedPapers":["coated_250","coated_300","coated_350"],"defaultColor":"4+4","defaultLam":"matte_11","minQty":10,"priceFrom":"126,00"},{"id":"menu-placemat-a3","name":"Плейсмет столовий (сет на стіл А3)","category":"office","icon":"🍕","desc":"Одноразова паперова підкладка під тарілки 297×420 мм на еко-крафті або офсеті.","defaultW":297,"defaultH":420,"defaultPaper":"kraft_200","allowedPapers":["offset_80","kraft_200"],"defaultColor":"1+0","minQty":100,"priceFrom":"12,00"},{"id":"menu-booklet-fold","name":"Меню-буклет зі згином (А3 -> А4)","category":"office","icon":"📋","desc":"Аркуш А3 з біговкою по центру складається у 4 смуги формату А4 з ламінацією.","defaultW":297,"defaultH":420,"defaultPaper":"coated_300","allowedPapers":["coated_250","coated_300"],"defaultColor":"4+4","defaultScoring":true,"minQty":10,"priceFrom":"138,00"},{"id":"wine-list-narrow","name":"Винна / барна карта вузька (105×297)","category":"office","icon":"🍷","desc":"Витягнутий елегантний вертикальний лист на 350г картоні з матовою ламінацією.","defaultW":105,"defaultH":297,"defaultPaper":"coated_350","allowedPapers":["coated_300","coated_350"],"defaultColor":"4+4","defaultLam":"matte_11","minQty":10,"priceFrom":"127,00"},{"id":"coaster-beermat","name":"Костер / бірдекель під келих (90×90)","category":"office","icon":"🍺","desc":"Квадратний або круглий підсклянник 90×90 мм на поглинаючому картонному матеріалі.","defaultW":90,"defaultH":90,"defaultPaper":"coated_350","allowedPapers":["coated_350","kraft_200"],"defaultColor":"4+4","defaultCorners":true,"minQty":100,"priceFrom":"14,00"},{"id":"postcard-a6","name":"Листівка поштова А6 (105×148)","category":"gifts","icon":"✉️","desc":"Класична поштівка з авторською ілюстрацією на цупкому картоні 300 г/м².","defaultW":105,"defaultH":148,"defaultPaper":"coated_300","allowedPapers":["coated_250","coated_300","coated_350","design_300"],"defaultColor":"4+4","minQty":50,"priceFrom":"15,00"},{"id":"postcard-a5","name":"Листівка А5 велика (148×210)","category":"gifts","icon":"💌","desc":"Велике вітальне фото-повідомлення до дня народження або професійного свята.","defaultW":148,"defaultH":210,"defaultPaper":"coated_300","allowedPapers":["coated_250","coated_300","coated_350"],"defaultColor":"4+4","minQty":50,"priceFrom":"18,00"},{"id":"postcard-folded","name":"Листівка подвійна з біговкою (210×198)","category":"gifts","icon":"📖","desc":"Складається навпіл до євро-формату 99×210 мм, зручно вкладається у конверт.","defaultW":198,"defaultH":210,"defaultPaper":"coated_300","allowedPapers":["coated_250","coated_300"],"defaultColor":"4+4","defaultScoring":true,"minQty":50,"priceFrom":"36,00"},{"id":"postcard-square","name":"Листівка квадратна (140×140)","category":"gifts","icon":"🔲","desc":"Стильний Instagram-формат для привітань, весільних запрошень та шоурумів.","defaultW":140,"defaultH":140,"defaultPaper":"coated_350","allowedPapers":["coated_300","coated_350","design_300"],"defaultColor":"4+4","minQty":50,"priceFrom":"18,00"},{"id":"postcard-pearl-majestic","name":"Листівка з перламутровим блиском Majestic","category":"gifts","icon":"✨","desc":"Мерехтливий італійський дизайнерський картон з шовковистим переливом під світлом.","defaultW":105,"defaultH":148,"defaultPaper":"design_300","allowedPapers":["design_300"],"defaultColor":"4+4","minQty":25,"priceFrom":"28,00"},{"id":"invitation-wedding","name":"Запрошення на весілля / подію (100×200)","category":"gifts","icon":"💒","desc":"Розмір 100×200 мм на дизайнерському папері або з Soft-Touch покриттям.","defaultW":100,"defaultH":200,"defaultPaper":"design_300","allowedPapers":["coated_300","coated_350","design_300"],"defaultColor":"4+4","minQty":25,"priceFrom":"34,00"},{"id":"calendar-pocket","name":"Календар кишеньковий (70×100)","category":"gifts","icon":"📅","desc":"Двостороння ламінація, скруглені 4 кути — надійний рекламний носій на весь рік.","defaultW":70,"defaultH":100,"defaultPaper":"coated_350","allowedPapers":["coated_350"],"defaultColor":"4+4","defaultLam":"gloss_11","defaultCorners":true,"minQty":100,"priceFrom":"19,00"},{"id":"calendar-tent","name":"Календар-будиночок настільний (210×100)","category":"gifts","icon":"🗓️","desc":"Стійка трикутна конструкція з 3 біговками, що прикрашає робочий стіл клієнта 365 днів.","defaultW":210,"defaultH":297,"defaultPaper":"coated_300","allowedPapers":["coated_300","coated_350"],"defaultColor":"4+0","defaultScoring":true,"minQty":25,"priceFrom":"51,00"},{"id":"calendar-wall-a4","name":"Календар перекидний настінний А4 (13 арк.)","category":"gifts","icon":"📆","desc":"13 місячних аркушів на пружині з ригелем + обкладинка-задник 200 г/м².","defaultW":210,"defaultH":297,"defaultPaper":"coated_170","allowedPapers":["coated_150","coated_170","coated_200"],"defaultColor":"4+0","defaultSpring":true,"pages":13,"pageStep":1,"coverPaper":"coated_200","coverColor":"4+0","minQty":10,"priceFrom":"260,00"},{"id":"desk-planning-mat-a3","name":"Настільний планінг А3 (відривний блок)","category":"gifts","icon":"🗓️","desc":"Блок із 52 аркушів (тиждень на аркуші) 80 г офсету з сіткою днів та проклеюванням нижнього краю.","defaultW":297,"defaultH":420,"defaultPaper":"offset_80","allowedPapers":["offset_80"],"defaultColor":"4+0","pages":52,"pageStep":1,"selfCover":true,"minQty":10,"priceFrom":"476,00"},{"id":"bookmark-with-eyelet","name":"Закладка для книг з отвором (50×180)","category":"gifts","icon":"🔖","desc":"Цупка закладка 350 г/м² з матовою ламінацією та отвором під атласну стрічку.","defaultW":50,"defaultH":180,"defaultPaper":"coated_350","allowedPapers":["coated_350","design_300"],"defaultColor":"4+4","defaultLam":"matte_11","defaultHole":true,"minQty":50,"priceFrom":"38,00"},{"id":"event-ticket-perforated","name":"Квиток події з перфорацією (90×180)","category":"polygraphy","icon":"🎟️","desc":"Квиток на концерт або захід з перфорованою лінією відриву корінця на щільному папері 150 г/м².","defaultW":90,"defaultH":180,"defaultPaper":"coated_150","allowedPapers":["coated_150","coated_170"],"defaultColor":"4+0","defaultPerforation":true,"minQty":100,"priceFrom":"13,00"},{"id":"postcard-a6-double","name":"Листівка A6 двостороння","category":"polygraphy","icon":"💌","desc":"Вітальна листівка 105×148 мм з повноколірним друком з обох боків на картоні 170 г/м².","defaultW":105,"defaultH":148,"defaultPaper":"coated_170","allowedPapers":["coated_170","coated_200","coated_250"],"defaultColor":"4+4","minQty":50,"priceFrom":"15,00"},{"id":"postcard-a5-tear-off","name":"Листівка A5 з відривним корінцем","category":"polygraphy","icon":"🎫","desc":"Листівка з перфорацією під талон: залишок — частина клієнта, корінець — для конкурсу або знижки.","defaultW":148,"defaultH":210,"defaultPaper":"coated_150","allowedPapers":["coated_150","coated_170"],"defaultColor":"4+0","defaultPerforation":true,"minQty":50,"priceFrom":"25,00"},{"id":"invitation-vertical","name":"Запрошення вертикальне (100×210)","category":"polygraphy","icon":"🕯️","desc":"Струнке запрошення на дизайнерському картоні з біговкою по лінії згину — весілля та події.","defaultW":100,"defaultH":210,"defaultPaper":"design_300","allowedPapers":["design_300","coated_300","coated_350"],"defaultColor":"4+0","defaultScoring":true,"minQty":50,"priceFrom":"29,00"},{"id":"flyer-a4-promo","name":"Флаєр А4 промо","category":"advertising","icon":"📢","desc":"Максимум інформації на аркуші А4: акції, прайс-листи, розклади. 130 г/м², колір 4+0.","defaultW":210,"defaultH":297,"defaultPaper":"coated_130","allowedPapers":["coated_130","coated_115","offset_80","coated_150"],"defaultColor":"4+0","minQty":100,"priceFrom":"13,00"},{"id":"wall-chart-a3-lam","name":"Стінець-графік А3 ламінований","category":"office","icon":"📊","desc":"Настінний графік роботи чи планування А3 у матовій ламінації — пишіть маркером та стирайте.","defaultW":297,"defaultH":420,"defaultPaper":"coated_200","allowedPapers":["coated_200","coated_250"],"defaultColor":"4+0","defaultLam":"matte_10","minQty":10,"priceFrom":"130,00"},{"id":"table-tent","name":"Тейбл-тент картка на стіл","category":"advertising","icon":"🔺","desc":"Двостороння картка 100×200 мм з біговкою — складається у трикутну наметку на столик.","defaultW":100,"defaultH":200,"defaultPaper":"coated_250","allowedPapers":["coated_250","coated_300"],"defaultColor":"4+4","defaultScoring":true,"defaultFolding":true,"minQty":50,"priceFrom":"39,00"},{"id":"price-card-a6","name":"Цінник на полицю А6","category":"advertising","icon":"🏷️","desc":"Тег А6 105×148 мм на картоні 200 г/м² для торгових полиць та виставкових стендів.","defaultW":105,"defaultH":148,"defaultPaper":"coated_200","allowedPapers":["coated_200","coated_250"],"defaultColor":"4+0","minQty":100,"priceFrom":"7,40"},{"id":"sticker-sheet-a5","name":"Аркуш наліпок А5 (самоклейка)","category":"stickers","icon":"🗒️","desc":"Аркуш А5 з вашим набором наліпок: висічка по контуру або легкий відрив без залишку клею.","defaultW":148,"defaultH":210,"defaultPaper":"selfadhesive_paper","allowedPapers":["selfadhesive_paper","selfadhesive_vinyl"],"defaultColor":"4+0","minQty":50,"priceFrom":"17,00"},{"id":"label-100x150","name":"Етикетка на тару (100×150)","category":"stickers","icon":"🧴","desc":"Прямокутна етикетка на банку, бутель або коробку. Самоклеючий папір Raflatac, друк 4+0.","defaultW":100,"defaultH":150,"defaultPaper":"selfadhesive_paper","allowedPapers":["selfadhesive_paper"],"defaultColor":"4+0","minQty":100,"priceFrom":"12,00"},{"id":"vinyl-sticker-a5","name":"Вінілова наліпка А5","category":"stickers","icon":"🛞","desc":"Стійка до дощу та UV плівка: вивіски на авто, вітрини, обладнання. Друк 4+0 на вінілі.","defaultW":148,"defaultH":210,"defaultPaper":"selfadhesive_vinyl","allowedPapers":["selfadhesive_vinyl"],"defaultColor":"4+0","minQty":20,"priceFrom":"36,00"},{"id":"poster-a3-photo","name":"Постер А3 на крейдованому 200 г","category":"posters","icon":"🖼️","desc":"Повноколірний постер А3 297×420 мм — яскраві кольори для афіш, репродукцій та промо.","defaultW":297,"defaultH":420,"defaultPaper":"coated_200","allowedPapers":["coated_200","coated_150","coated_250"],"defaultColor":"4+0","minQty":10,"priceFrom":"72,00"},{"id":"poster-a3-matte-lam","name":"Постер А3 з матовою ламінацією","category":"posters","icon":"🌃","desc":"Постер А3 у матовій ламінації 1+0: без бліків, захист від вицвітання та подряпин.","defaultW":297,"defaultH":420,"defaultPaper":"coated_200","allowedPapers":["coated_200","coated_250"],"defaultColor":"4+0","defaultLam":"matte_10","minQty":10,"priceFrom":"130,00"},{"id":"info-tablet-a5","name":"Інформаційна табличка А5","category":"posters","icon":"ℹ️","desc":"Табличка А5 з ламінацією — для приміщень, офісів та HOA: графік роботи, правила, вказівники.","defaultW":148,"defaultH":210,"defaultPaper":"coated_250","allowedPapers":["coated_250","coated_300"],"defaultColor":"4+0","defaultLam":"matte_10","minQty":10,"priceFrom":"109,00"},{"id":"booklet-euro-classic","name":"Буклет євро А4 2 фальці","category":"booklets","icon":"📨","desc":"Класичний євробуклет: розгортка А4 з двома фальцями на 6 смуг. Папір 130 г/м², друк 4+0.","defaultW":210,"defaultH":297,"defaultPaper":"coated_130","allowedPapers":["coated_130","coated_115","coated_150"],"defaultColor":"4+0","defaultFolding":true,"minQty":100,"priceFrom":"19,00"},{"id":"booklet-window-a4","name":"Буклет вікно А4 2 фальці","category":"booklets","icon":"🪟","desc":"Розгортка А4 з віконною висічкою-згином: внутрішній клапан зʼявляється при розкритті. Друк 4+4.","defaultW":210,"defaultH":297,"defaultPaper":"coated_150","allowedPapers":["coated_150","coated_170"],"defaultColor":"4+4","defaultFolding":true,"minQty":100,"priceFrom":"25,00"},{"id":"catalog-a5-staples","name":"Каталог продукції А5 на скобах (16 стор.)","category":"booklets","icon":"📘","desc":"Компактний каталог А5 зі скріпленням на скобу — прайси та колекції для менеджерів і точок продажу.","defaultW":148,"defaultH":210,"defaultPaper":"coated_130","allowedPapers":["coated_130","coated_150"],"defaultColor":"4+4","defaultStaples":true,"pages":16,"pageStep":4,"selfCover":true,"minQty":100,"priceFrom":"52,00"},{"id":"letterhead-form","name":"Бланк організації А4","category":"office","icon":"📄","desc":"Фірмовий бланк з реквізитами та логотипом на офсеті 80 г/м², друк 1+0. Тиражі від 100.","defaultW":210,"defaultH":297,"defaultPaper":"offset_80","allowedPapers":["offset_80"],"defaultColor":"1+0","minQty":100,"priceFrom":"6,80"},{"id":"conference-folder","name":"Конференц-папка з клапанами","category":"office","icon":"🗂️","desc":"Папка А4 з бігованим внутрішнім клапаном для документів — семінари, презентації, тренінги.","defaultW":230,"defaultH":320,"defaultPaper":"coated_250","allowedPapers":["coated_250","coated_300"],"defaultColor":"4+0","defaultScoring":true,"minQty":50,"priceFrom":"40,00"},{"id":"notebook-a6-spring","name":"Блокнот А6 на пружині (48 арк.)","category":"office","icon":"📔","desc":"Корпоративний блокнот А6: щільна обкладинка 250 г/м², блок 48 аркушів (96 стор.), пружина зверху.","defaultW":105,"defaultH":148,"defaultPaper":"offset_80","allowedPapers":["offset_80","coated_115"],"defaultColor":"1+1","defaultSpring":true,"pages":96,"pageStep":2,"coverPaper":"coated_250","coverColor":"4+4","minQty":25,"priceFrom":"107,00"},{"id":"calendar-desk-house","name":"Календар-будиночок настільний","category":"gifts","icon":"🏠","desc":"Настільний календар 100×190 мм з біговками та пружиною-триногою — 12 рекламних смуг.","defaultW":100,"defaultH":190,"defaultPaper":"coated_250","allowedPapers":["coated_250","coated_300"],"defaultColor":"4+4","defaultScoring":true,"defaultSpring":true,"minQty":25,"priceFrom":"103,00"},{"id":"merch-tshirt","name":"Футболка з логотипом","category":"merch","icon":"👕","kind":"merch","unitPrice":30,"applyMethod":"DTF-принт","desc":"Бавовняна футболка 190 г/м² з принтом логотипа (DTF — стійке до прань). Розміри S–3XL, кольори на вибір.","defaultW":200,"defaultH":280,"defaultPaper":"coated_130","allowedPapers":[],"defaultColor":"4+0","minQty":10,"priceFrom":"30,00"},{"id":"merch-raglan","name":"Реглан (лонгслів) з логотипом","category":"merch","icon":"🎽","kind":"merch","unitPrice":990,"applyMethod":"DTF-принт","desc":"Реглан з довгим рукавом, щільний трикотаж 240 г/м², контрастні рукави. Принт логотипа на грудях/спині.","defaultW":200,"defaultH":280,"defaultPaper":"coated_130","allowedPapers":[],"defaultColor":"4+0","minQty":5,"priceFrom":"990,00"},{"id":"merch-hoodie","name":"Худі з логотипом","category":"merch","icon":"🧥","kind":"merch","unitPrice":1500,"applyMethod":"DTF + вишивка","desc":"Худі з капюшоном, фліс 320 г/м², куліс для шнурів. Логотип: DTF-принт або вишивка (до 10 000 стібків).","defaultW":200,"defaultH":280,"defaultPaper":"coated_130","allowedPapers":[],"defaultColor":"4+0","minQty":5,"priceFrom":"1 500,00"},{"id":"merch-vest","name":"Жилетка з логотипом","category":"merch","icon":"🦺","kind":"merch","unitPrice":1950,"applyMethod":"DTF + вишивка","desc":"Фірмова жилетка (робоча/корпоративна), меџ 280 г/м². Логотип на грудях та спині, індивідуальні розміри.","defaultW":200,"defaultH":280,"defaultPaper":"coated_130","allowedPapers":[],"defaultColor":"4+0","minQty":5,"priceFrom":"1 950,00"},{"id":"merch-backpack","name":"Рюкзак з логотипом","category":"merch","icon":"🎒","kind":"merch","unitPrice":500,"applyMethod":"Шовкографія","desc":"Міський рюкзак 18 л, поліестер 600D, відділ для ноутбука 15\". Логотип шовкографією до 2 кольорів.","defaultW":200,"defaultH":280,"defaultPaper":"coated_130","allowedPapers":[],"defaultColor":"4+0","minQty":5,"priceFrom":"500,00"},{"id":"pack-start","name":"Пакунок «СТАРТ» — запуск бізнесу","category":"packages","icon":"🚀","kind":"package","pkgPrice":4140,"items":[{"id":"business-card-standard","qty":100},{"id":"flyer-a6","qty":500},{"id":"calendar-desk-house","qty":25}],"contents":["Візитка стандарт (90×50) — 100 шт","Флаєр А6 (105×148) — 500 шт","Календар-будиночок настільний — 25 шт"],"desc":"Все для запуску: візитки для партнерів, флаєри для поштових скриньок і календарі, що працюють на клієнта рік.","defaultW":90,"defaultH":50,"defaultPaper":"coated_350","allowedPapers":[],"defaultColor":"4+0","minQty":1,"priceFrom":"4 140,00"},{"id":"pack-promo","name":"Пакунок «ПРОМО-АТАКА»","category":"packages","icon":"📣","kind":"package","pkgPrice":11621,"items":[{"id":"flyer-a5","qty":1000},{"id":"eurobooklet-2fold","qty":500},{"id":"sticker-a6","qty":200}],"contents":["Флаєр А5 (148×210) — 1000 шт","Буклет євро (2 фальці) — 500 шт","Нахлейка А6 (105×148) — 200 шт"],"desc":"Масова рекламна кампанія: роздача флаєрів, буклети на стойки та стікери на пакети/вітрини.","defaultW":148,"defaultH":210,"defaultPaper":"coated_130","allowedPapers":[],"defaultColor":"4+4","minQty":1,"priceFrom":"11 621,00"},{"id":"pack-conference","name":"Пакунок «КОНФЕРЕНЦІЯ»","category":"packages","icon":"🎤","kind":"package","pkgPrice":16030,"items":[{"id":"badge-conference","qty":50},{"id":"presentation-spring","qty":50},{"id":"notebook-spring-a5","qty":25},{"id":"conference-folder","qty":50}],"contents":["Бейдж конференційний — 50 шт","Презентація на пружині (20 стор.) — 50 шт","Блокнот А5 на пружині — 25 шт","Конференц-папка з клапанами — 50 шт"],"desc":"Повний комплект для заходу на 50 учасників: бейджі, програми, блокноти та фірмові папки.","defaultW":90,"defaultH":120,"defaultPaper":"coated_250","allowedPapers":[],"defaultColor":"4+0","minQty":1,"priceFrom":"16 030,00"},{"id":"pack-horeca","name":"Пакунок «HORECA» — ресторану","category":"packages","icon":"🍽️","kind":"package","pkgPrice":5526,"items":[{"id":"menu-a4-laminated","qty":20},{"id":"table-tent","qty":50},{"id":"coaster-beermat","qty":100},{"id":"wine-list-narrow","qty":10}],"contents":["Меню А4 з ламінацією — 20 шт","Тейбл-тент — 50 шт","Підставка під кухоль (біермат) — 100 шт","Винна карта (вузька) — 10 шт"],"desc":"Комплект для кафе/ресторану: стійкі до вологи меню, тейбл-тенти на столи та підставки.","defaultW":210,"defaultH":297,"defaultPaper":"coated_300","allowedPapers":[],"defaultColor":"4+4","minQty":1,"priceFrom":"5 526,00"},{"id":"pack-merch","name":"Пакунок «МЕРЧ-СТАРТ» — команда","category":"packages","icon":"👔","kind":"package","pkgPrice":15525,"items":[{"id":"merch-tshirt","qty":10},{"id":"merch-raglan","qty":5},{"id":"merch-hoodie","qty":5},{"id":"merch-backpack","qty":5}],"contents":["Футболка з логотипом — 10 шт","Реглан з логотипом — 5 шт","Худі з логотипом — 5 шт","Рюкзак з логотипом — 5 шт"],"desc":"Одяг для команди: футболки для промо-персоналу, реглани та худі для колективу, рюкзаки — як подарунок клієнтам.","defaultW":200,"defaultH":280,"defaultPaper":"coated_130","allowedPapers":[],"defaultColor":"4+0","minQty":1,"priceFrom":"15 525,00"},{"id":"pack-retail","name":"Пакунок «РОЗДРІБ» — магазин","category":"packages","icon":"🛒","kind":"package","pkgPrice":6283,"items":[{"id":"tag-clothing","qty":500},{"id":"price-tag-retail","qty":500},{"id":"stickerpack-a5","qty":100},{"id":"postcard-a6","qty":100}],"contents":["Бірка для одягу — 500 шт","Цінник роздрібний — 500 шт","Стікерпак А5 — 100 шт","Листівка А6 — 100 шт"],"desc":"Оформлення точки продажу: бірки та цінники на товар, стікери на пакети і листівки в замовлення.","defaultW":50,"defaultH":90,"defaultPaper":"coated_300","allowedPapers":[],"defaultColor":"4+0","minQty":1,"priceFrom":"6 283,00"}],"categories":[{"key":"polygraphy","label":"Візитки і ділова поліграфія","short":"Візитки","icon":"💳","desc":"Візитки (стандарт, євро, soft-touch, зі згином) та бірки/ярлики на картоні 300–350 г/м².","subs":[]},{"key":"advertising","label":"Рекламна поліграфія","short":"Реклама","icon":"📣","desc":"Флаєри всіх форматів, купони, квитки, воблери, шельтхалтери, тейбл-тенти — все, що продає.","subs":[]},{"key":"stickers","label":"Нахлейки та етикетки","short":"Нахлейки","icon":"🏷️","desc":"Стікери на папері та вінілі, стікерпаки, етикетки для тари, пломби-нашліпки.","subs":[]},{"key":"posters","label":"Постери та афіші","short":"Постери","icon":"🖼️","desc":"Постери А4–А3, афіші заходів, навчальні плакати, фотодрук.","subs":[]},{"key":"booklets","label":"Буклети та багатосторінкові видання","short":"Буклети","icon":"📖","desc":"Буклети зі згинами, брошури на скобі/пружині, каталоги. Тираж до 1000 прим. — далі офсет.","subs":[]},{"key":"office","label":"Офісна документація","short":"Офіс","icon":"🗂️","desc":"Фірмові бланки, конверти, грамоти, презентації, блокноти, папки, меню.","subs":[]},{"key":"gifts","label":"Подарунки та календарі","short":"Подарунки","icon":"🎁","desc":"Листівки, запрошення, настільні та настінні календарі, плнінги, сувеніри.","subs":[]},{"key":"merch","label":"Мерч з логотипом","short":"Мерч","icon":"👕","desc":"Одяг та аксесуари з вашим логотипом. Друк на готових виробах (DTF/термоперенесення): тираж × ціна/шт + макетування (+).","subs":[]},{"key":"packages","label":"Готові пакунки","short":"Пакунки","icon":"📦","desc":"Комплексні набори поліграфії зі знижкою ~10%. Макетування всіх макетів уже включено (+) у ціну.","subs":[]}]};
+
+/* --- Стан --- */
+const LS_KEY = 'acp_admin_state_v2';
+let P = JSON.parse(JSON.stringify(FACTORY.prices));
+let PROD = JSON.parse(JSON.stringify(FACTORY.productsCatalog));
+let CATSD = (FACTORY.categories && FACTORY.categories.length)
+  ? JSON.parse(JSON.stringify(FACTORY.categories))
+  : CATS.map(function (c) { return { key: c[0], label: c[1], short: c[1], icon: '', desc: '', subs: [] }; });
+let edIndex = -1;        // -1 = новий виріб
+let edDraft = null;      // чернетка редактора
+
+function catLabel(key) {
+  const c = CATSD.find(function (x) { return x.key === key; });
+  return c ? (c.short || c.label) : (key || '—');
+}
+function catMetaOf(key) { return CATSD.find(function (x) { return x.key === key; }); }
+function subsOf(key) {
+  const c = catMetaOf(key);
+  return (c && Array.isArray(c.subs)) ? c.subs : [];
+}
+
+function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+function fmtUAH(n) {
+  return (Math.round(n * 100) / 100).toLocaleString('uk-UA', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' ₴';
+}
+function num(v, def) { const n = parseFloat(v); return isFinite(n) ? n : (def || 0); }
+
+/* ============================================================
+   ЦІНОВИЙ РУШІЙ — точний порт src/lib/pricing.ts
+   ============================================================ */
+function calcLayout(w, h) {
+  const rw = Math.round(w), rh = Math.round(h);
+  if ((rw === 297 && rh === 420) || (rw === 420 && rh === 297)) return { count: 1, rotated: false };
+  if ((rw === 210 && rh === 297) || (rw === 297 && rh === 210)) return { count: 2, rotated: false };
+  if ((rw === 148 && rh === 210) || (rw === 210 && rh === 148)) return { count: 4, rotated: false };
+  if ((rw === 105 && rh === 148) || (rw === 148 && rh === 105)) return { count: 8, rotated: false };
+  if ((rw === 74 && rh === 105) || (rw === 105 && rh === 74)) return { count: 16, rotated: false };
+  if ((rw === 90 && rh === 50) || (rw === 50 && rh === 90)) return { count: 24, rotated: true };
+  if ((rw === 99 && rh === 210) || (rw === 210 && rh === 99)) return { count: 6, rotated: false };
+  const cut = 2;
+  const cA = Math.floor(P.sheet.usableW / (w + cut)), rA = Math.floor(P.sheet.usableH / (h + cut));
+  const cntA = Math.max(0, cA * rA);
+  const cB = Math.floor(P.sheet.usableW / (h + cut)), rB = Math.floor(P.sheet.usableH / (w + cut));
+  const cntB = Math.max(0, cB * rB);
+  if (cntB > cntA) return { count: Math.max(1, cntB), rotated: true };
+  return { count: Math.max(1, cntA), rotated: false };
+}
+function tierRate(color, sheets) {
+  const tiers = P.printTiers[color] || P.printTiers['4+0'];
+  for (const t of tiers) { if (t.max === null || sheets <= t.max) return t.price; }
+  return tiers[tiers.length - 1] ? tiers[tiers.length - 1].price : 18;
+}
+function isDoubleSided(c) { return c === '4+4' || c === '1+1'; }
+function coverLayout(spreadW, spreadH) {
+  const snap = (v, std) => Math.abs(v - std) <= 4;
+  if ((snap(spreadW, 420) && snap(spreadH, 297)) || (snap(spreadW, 297) && snap(spreadH, 420))) return { count: 1 };
+  if ((snap(spreadW, 297) && snap(spreadH, 210)) || (snap(spreadW, 210) && snap(spreadH, 297))) return { count: 2 };
+  if ((snap(spreadW, 210) && snap(spreadH, 148)) || (snap(spreadW, 148) && snap(spreadH, 210))) return { count: 4 };
+  if ((snap(spreadW, 148) && snap(spreadH, 105)) || (snap(spreadW, 105) && snap(spreadH, 148))) return { count: 8 };
+  return calcLayout(spreadW, spreadH);
+}
+/* Друк на аркушах А3 (односторінкові та багатосторінкові видання) */
+function calcPriceFor(w, h, qty, color, paperKey, lamKey, fin, opts) {
+  opts = opts || {};
+  const safeQty = Math.max(1, Math.floor(qty) || 1);
+  const layout = calcLayout(w, h);
+  const itemsPerSheet = layout.count;
+  const pages = Math.max(1, Math.floor(opts.pages != null ? opts.pages : 1) || 1);
+  const isMultipage = pages > 1;
+  const hasCover = !!(isMultipage && opts.hasCover);
+
+  let blockSheets, pagesPerSheet, sheetsPerCopy;
+  if (isMultipage) {
+    const sides = isDoubleSided(color) ? 2 : 1;
+    pagesPerSheet = itemsPerSheet * sides;
+    sheetsPerCopy = Math.ceil(pages / pagesPerSheet);
+    blockSheets = sheetsPerCopy * safeQty;
+  } else {
+    pagesPerSheet = itemsPerSheet; sheetsPerCopy = 1;
+    blockSheets = Math.ceil(safeQty / itemsPerSheet);
+  }
+  const blockRate = tierRate(color, blockSheets);
+  const blockPrintCost = Math.round(blockSheets * blockRate * 100) / 100;
+  const pDef = P.paper[paperKey];
+  const pPrice = pDef ? pDef.price : 2.4;
+  const blockPaperCost = Math.round(blockSheets * pPrice * 100) / 100;
+
+  let coverSheets = 0, coverPrintCost = 0, coverPaperCost = 0, coverPerSheet = 1;
+  if (hasCover) {
+    const cl = coverLayout(2 * w, h);
+    coverPerSheet = Math.max(1, cl.count);
+    coverSheets = Math.ceil(safeQty / coverPerSheet);
+    const coverColor = opts.coverColor || '4+4';
+    coverPrintCost = Math.round(coverSheets * tierRate(coverColor, coverSheets) * 100) / 100;
+    const cDef = P.paper[opts.coverPaperKey || paperKey];
+    coverPaperCost = Math.round(coverSheets * (cDef ? cDef.price : pPrice) * 100) / 100;
+  }
+  let lamCost = 0;
+  if (hasCover) {
+    const lDef = P.lamination[opts.coverLamKey || 'none'];
+    if (opts.coverLamKey && opts.coverLamKey !== 'none' && lDef) {
+      lamCost = Math.round((P.blockSetup + coverSheets * lDef.price) * 100) / 100;
+    }
+  } else {
+    const lDef = P.lamination[lamKey];
+    if (lDef && lamKey !== 'none') {
+      lamCost = Math.round((P.blockSetup + blockSheets * lDef.price) * 100) / 100;
+    }
+  }
+  let finCost = 0;
+  if (fin) for (const k in fin) { if (fin[k] && P.finishing[k]) finCost += P.blockSetup + safeQty * P.finishing[k].price; }
+  finCost = Math.round(finCost * 100) / 100;
+  const prepressCost = Math.round(P.prepress.price * 100) / 100;
+  const printCost = Math.round((blockPrintCost + coverPrintCost) * 100) / 100;
+  const paperCost = Math.round((blockPaperCost + coverPaperCost) * 100) / 100;
+  const total = Math.round((printCost + paperCost + lamCost + finCost + prepressCost) * 100) / 100;
+  return {
+    kind: 'print', itemsPerSheet, sheetsNeeded: blockSheets, total,
+    unit: Math.round((total / safeQty) * 100) / 100,
+    waste: Math.round((w * h * itemsPerSheet / (P.sheet.width * P.sheet.height)) * 100),
+    isMultipage, sheetsPerCopy, hasCover, coverSheets, prepressCost,
+  };
+}
+/* Мерч: тираж × ціна/шт + допечатна */
+function calcMerch(p, qty) {
+  const safeQty = Math.max(1, Math.floor(qty) || 1);
+  const goods = Math.round((p.unitPrice || 0) * safeQty * 100) / 100;
+  const prepressCost = Math.round(P.prepress.price * 100) / 100;
+  const total = Math.round((goods + prepressCost) * 100) / 100;
+  return { kind: 'merch', total, unit: Math.round((total / safeQty) * 100) / 100, prepressCost };
+}
+/* Простий товар (широкоформатка, сувеніри): ціна/шт за щаблями тиражу.
+   tiers = [{qty: 1, price: 2500}, {qty: 10, price: 2200}] — «від 10 шт — 2200 ₴/шт».
+   Разом = тираж × ціна поточного щабля. Препресс включено у ціну виробу. */
+function simpleTiers(p) {
+  const t = (p.tiers || []).filter(function (x) { return x && x.qty > 0 && isFinite(x.price); });
+  return t.slice().sort(function (a, b) { return a.qty - b.qty; });
+}
+function simpleRateFor(p, qty) {
+  const t = simpleTiers(p);
+  if (!t.length) return 0;
+  let rate = t[0].price;
+  for (const s of t) { if (qty >= s.qty) rate = s.price; }
+  return rate;
+}
+function calcSimple(p, qty) {
+  const safeQty = Math.max(1, Math.floor(qty) || 1);
+  const rate = simpleRateFor(p, safeQty);
+  const total = Math.round(rate * safeQty * 100) / 100;
+  const next = simpleTiers(p).find(function (s) { return s.qty > safeQty; });
+  return { kind: 'simple', total, unit: rate, simpleRate: rate, nextTier: next || null, prepressCost: 0 };
+}
+/* Пакунок: сума компонентів − 10% комплект-знижка */
+function calcPackage(p, qty, itemsOverride) {
+  const safeQty = Math.max(1, Math.floor(qty) || 1);
+  const items = (itemsOverride && itemsOverride.length) ? itemsOverride : p.items;
+  let total;
+  if (items && items.length) {
+    let sum = 0;
+    for (const it of items) {
+      const comp = PROD.find(function (x) { return x.id === it.id; });
+      if (!comp) continue;
+      sum += calcForProduct(comp, Math.max(1, it.qty) * safeQty).total;
+    }
+    total = Math.round(sum * 0.9);
+  } else {
+    total = Math.round((p.pkgPrice || 0) * safeQty * 100) / 100;
+  }
+  return { kind: 'package', total, unit: Math.round((total / safeQty) * 100) / 100 };
+}
+function calcForProduct(p, qty) {
+  if (p.kind === 'simple') return calcSimple(p, qty);
+  if (p.kind === 'merch') return calcMerch(p, qty);
+  if (p.kind === 'package') return calcPackage(p, qty);
+  const fin = {
+    scoring: !!p.defaultScoring, folding: !!p.defaultFolding, corners: !!p.defaultCorners,
+    hole: !!p.defaultHole, staples: !!p.defaultStaples, spring: !!p.defaultSpring,
+    plotter: !!p.defaultPlotter, perforation: !!p.defaultPerforation,
+  };
+  return calcPriceFor(p.defaultW, p.defaultH, qty, p.defaultColor || '4+4', p.defaultPaper || 'coated_130',
+    p.defaultLam || 'none', fin,
+    { pages: p.pages || 1, hasCover: !!(p.pages && !p.selfCover), coverColor: p.coverColor, coverPaperKey: p.coverPaper, coverLamKey: p.coverLam });
+}
+function isLeaflet(p) { return /флаєр|листівк/i.test(p ? p.name : ''); }
+function maxQtyFor(p) {
+  if (!p) return 1000;
+  if (p.kind === 'package') return 50;
+  if (p.kind === 'simple') return Math.max(1, parseInt(p.maxQty, 10) || 1000);
+  if (p.kind === 'merch') return 1000;
+  if (p.pages) return 1000;
+  return isLeaflet(p) ? 2500 : 1000;
+}
+/* Дефолтний тираж для показу ціни в списку */
+function demoQty(p) {
+  if (p.kind === 'package') return 1;
+  if (p.kind === 'simple') {
+    const t = simpleTiers(p);
+    return t.length ? t[0].qty : 1;
+  }
+  if (p.kind === 'merch') return 10;
+  return Math.min(maxQtyFor(p), Math.max(p.minQty || 1, 100));
+}
+</script>
+
+<script>
+/* ============================================================
+   UI: брама, таби, цінові таблиці, список виробів, редактор,
+   публікація catalog-override.js, бекапи
+   ============================================================ */
+
+/* ---------- Брама PIN ---------- */
+function gateEnter() {
+  const v = document.getElementById('gatePin').value.trim();
+  if (v === ADMIN_PIN) {
+    sessionStorage.setItem('acp_admin_ok', '1');
+    document.getElementById('gate').style.display = 'none';
+    ['app', 'app2', 'app3'].forEach(function (id) { document.getElementById(id).style.display = ''; });
+    boot();
+  } else {
+    document.getElementById('gateErr').textContent = 'Невірний код. Спробуйте ще раз.';
+  }
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && document.getElementById('gate').style.display !== 'none') gateEnter();
+});
+
+/* ---------- Збереження/завантаження стану ---------- */
+function saveState() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ prices: P, products: PROD, categories: CATSD, savedAt: new Date().toISOString() })); } catch (e) {}
+  updateBadges();
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const st = JSON.parse(raw);
+    if (st && st.prices && Array.isArray(st.products)) { P = st.prices; PROD = st.products; }
+    if (st && Array.isArray(st.categories) && st.categories.length) CATSD = st.categories;
+  } catch (e) {}
+}
+function isChanged() {
+  return JSON.stringify(P) !== JSON.stringify(FACTORY.prices) ||
+         JSON.stringify(PROD) !== JSON.stringify(FACTORY.productsCatalog) ||
+         JSON.stringify(CATSD) !== JSON.stringify(FACTORY.categories || []);
+}
+function updateBadges() {
+  const n = PROD.length;
+  document.getElementById('statCount').textContent = 'виробів: ' + n;
+  document.getElementById('tabProdCount').textContent = n;
+  document.getElementById('tabCatCount').textContent = CATSD.length;
+  const ch = document.getElementById('statChanged');
+  if (isChanged()) { ch.textContent = 'є зміни — опублікуйте'; ch.classList.add('changed'); }
+  else { ch.textContent = 'синхронізовано з сайтом'; ch.classList.remove('changed'); }
+}
+let toastT;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600);
+}
+
+/* ---------- Таби ---------- */
+function switchTab(name) {
+  document.querySelectorAll('.atab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === name); });
+  document.querySelectorAll('.tabsec').forEach(function (s) { s.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+/* ---------- Цінові таблиці ---------- */
+function getPath(obj, path) {
+  return path.split('.').reduce(function (o, k) { return o ? o[k] : undefined; }, obj);
+}
+function setPath(obj, path, val) {
+  const ks = path.split('.'); const last = ks.pop();
+  const t = ks.reduce(function (o, k) { return o[k]; }, obj);
+  t[last] = val;
+}
+function bindScalar(input) {
+  const path = input.dataset.pr;
+  const isNum = input.type === 'number';
+  input.value = getPath(P, path);
+  input.addEventListener('change', function () {
+    setPath(P, path, isNum ? num(input.value) : input.value);
+    saveState(); refreshPricesEverywhere();
+  });
+}
+function renderScalars() {
+  document.querySelectorAll('[data-pr]').forEach(bindScalar);
+}
+function renderPapers() {
+  const tb = document.getElementById('pr-paper'); tb.innerHTML = '';
+  Object.keys(P.paper).forEach(function (key) {
+    const def = P.paper[key];
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="rowkey"><b>' + key + '</b></td>' +
+      '<td><input value="' + String(def.name).replace(/"/g, '&quot;') + '" data-k="' + key + '" data-f="name"></td>' +
+      '<td class="cell-narrow"><input type="number" step="0.1" value="' + def.price + '" data-k="' + key + '" data-f="price"></td>';
+    tr.querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        P.paper[key][inp.dataset.f] = inp.dataset.f === 'name' ? inp.value : num(inp.value);
+        saveState(); refreshPricesEverywhere();
+      });
+    });
+    tb.appendChild(tr);
+  });
+}
+function renderLam() {
+  const tb = document.getElementById('pr-lam'); tb.innerHTML = '';
+  Object.keys(P.lamination).forEach(function (key) {
+    const def = P.lamination[key];
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="rowkey">' + key + '</td>' +
+      '<td><input value="' + String(def.name).replace(/"/g, '&quot;') + '" data-k="' + key + '" data-f="name"></td>' +
+      '<td class="cell-narrow"><input type="number" step="0.1" value="' + def.price + '" data-k="' + key + '" data-f="price"></td>';
+    tr.querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        P.lamination[key][inp.dataset.f] = inp.dataset.f === 'name' ? inp.value : num(inp.value);
+        saveState(); refreshPricesEverywhere();
+      });
+    });
+    tb.appendChild(tr);
+  });
+}
+function renderFin() {
+  const tb = document.getElementById('pr-fin'); tb.innerHTML = '';
+  Object.keys(P.finishing).forEach(function (key) {
+    const def = P.finishing[key];
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="rowkey">' + (def.name || key) + '</td>' +
+      '<td class="cell-mid"><input type="number" step="0.5" value="' + def.setup + '" data-k="' + key + '" data-f="setup" title="Включення блока, ₴"></td>' +
+      '<td class="cell-narrow"><input type="number" step="0.05" value="' + def.price + '" data-k="' + key + '" data-f="price" title="Ціна за 1 шт, ₴"></td>';
+    tr.querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        P.finishing[key][inp.dataset.f] = num(inp.value);
+        saveState(); refreshPricesEverywhere();
+      });
+    });
+    tb.appendChild(tr);
+  });
+}
+function renderTiers() {
+  const wrap = document.getElementById('pr-tiers'); wrap.innerHTML = '';
+  Object.keys(P.printTiers).forEach(function (color) {
+    const box = document.createElement('div'); box.className = 'card';
+    box.innerHTML = '<div class="sec-title">' + color + ' <span class="hint">' +
+      ({ '1+0': 'Ч/Б 1 сторона', '1+1': 'Ч/Б 2 сторони', '4+0': 'Колір 1 сторона', '4+4': 'Колір 2 сторони' }[color] || '') +
+      '</span></div><table class="at"><tbody></tbody></table>' +
+      '<button class="abtn small" style="margin-top:8px" data-add>Додати щабель</button>';
+    const tb = box.querySelector('tbody');
+    function draw() {
+      tb.innerHTML = '';
+      const sorted = P.printTiers[color].slice().sort(function (a, b) { return (a.max || 1e9) - (b.max || 1e9); });
+      P.printTiers[color] = sorted;
+      sorted.forEach(function (t, i) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="rowkey">до <input type="number" step="10" min="1" style="width:70px" value="' + (t.max === null ? '' : t.max) + '" placeholder="∞" data-i="' + i + '" data-f="max"></td>' +
+          '<td class="cell-narrow"><input type="number" step="0.1" value="' + t.price + '" data-i="' + i + '" data-f="price"></td>' +
+          '<td class="cell-xs"><button class="del-row" data-del="' + i + '" title="Видалити щабель">✕</button></td>';
+        tr.querySelectorAll('input').forEach(function (inp) {
+          inp.addEventListener('change', function () {
+            const idx = parseInt(inp.dataset.i, 10);
+            if (inp.dataset.f === 'max') {
+              const v = inp.value.trim();
+              P.printTiers[color][idx].max = v === '' ? null : parseInt(v, 10);
+            } else {
+              P.printTiers[color][idx].price = num(inp.value);
+            }
+            saveState(); refreshPricesEverywhere();
+          });
+        });
+        tr.querySelector('[data-del]').addEventListener('click', function () {
+          if (P.printTiers[color].length <= 1) return toast('Останній щабель не можна видалити');
+          P.printTiers[color].splice(parseInt(this.dataset.del, 10), 1);
+          saveState(); renderTiers(); refreshPricesEverywhere();
+        });
+        tb.appendChild(tr);
+      });
+    }
+    draw();
+    box.querySelector('[data-add]').addEventListener('click', function () {
+      P.printTiers[color].push({ max: null, price: 1 });
+      saveState(); renderTiers(); refreshPricesEverywhere();
+    });
+    wrap.appendChild(box);
+  });
+}
+function refreshPricesEverywhere() {
+  renderProducts();          // оновити ціни в списку
+  if (edDraft) renderPreview();
+}
+
+/* ---------- Список виробів ---------- */
+function renderCatOptions() {
+  const sel = document.getElementById('pcat');
+  sel.innerHTML = '<option value="all">Всі категорії</option>' +
+    CATSD.map(function (c) { return '<option value="' + esc(c.key) + '">' + esc(c.label) + '</option>'; }).join('');
+  renderSubOptions();
+}
+function renderSubOptions() {
+  const sel = document.getElementById('psub');
+  if (!sel) return;
+  const cat = document.getElementById('pcat').value;
+  const keep = sel.value;
+  let opts = '<option value="all">Всі підкатегорії</option>';
+  if (cat === 'all') {
+    const seen = {};
+    CATSD.forEach(function (c) { (c.subs || []).forEach(function (s) { if (!seen[s]) { seen[s] = 1; opts += '<option value="' + esc(s) + '">' + esc(s) + '</option>'; } }); });
+  } else {
+    subsOf(cat).forEach(function (s) { opts += '<option value="' + esc(s) + '">' + esc(s) + '</option>'; });
+  }
+  sel.innerHTML = opts;
+  if (Array.prototype.some.call(sel.options, function (o) { return o.value === keep; })) sel.value = keep;
+}
+function priceCell(p) {
+  const q = demoQty(p);
+  const r = calcForProduct(p, q);
+  if ((p.kind || 'print') === 'simple') {
+    const t = simpleTiers(p);
+    const next = t.length > 1 ? ' · від ' + t[1].qty + ' шт — ' + fmtUAH(t[1].price) + '/шт' : '';
+    return fmtUAH(r.total) + ' <span style="color:var(--text-dim)">/ ' + t[0].qty + ' шт' + next + '</span>';
+  }
+  const label = p.kind === 'package' ? q + ' компл' : q + ' шт';
+  return '≈ ' + fmtUAH(r.total) + ' <span style="color:var(--text-dim)">/ ' + label + '</span>';
+}
+function renderProducts() {
+  const q = (document.getElementById('psearch').value || '').toLowerCase().trim();
+  const cat = document.getElementById('pcat').value;
+  const subSel = document.getElementById('psub');
+  const sub = subSel ? subSel.value : 'all';
+  const kind = document.getElementById('pkind').value;
+  const list = document.getElementById('plist'); list.innerHTML = '';
+  let shown = 0;
+  PROD.forEach(function (p, i) {
+    const numStr = '№' + String(i + 1).padStart(3, '0');
+    if (cat !== 'all' && p.category !== cat) return;
+    if (sub !== 'all' && (p.subcategory || '') !== sub) return;
+    if (kind !== 'all' && (p.kind || 'print') !== kind) return;
+    if (q && !(p.name.toLowerCase().includes(q) || numStr.includes(q) || p.id.toLowerCase().includes(q))) return;
+    shown++;
+    const row = document.createElement('div');
+    row.className = 'prow' + (/^custom_/.test(p.id) ? ' new-product' : '');
+    const subTxt = p.subcategory ? '<div class="psub">' + esc(p.subcategory) + '</div>' : '';
+    row.innerHTML =
+      '<span class="pnum">' + numStr + '</span>' +
+      '<span class="pname">' + esc(p.name) + '</span>' +
+      '<span class="pcat" style="width:170px">' + esc(catLabel(p.category)) + subTxt + '</span>' +
+      '<span class="pkind ' + (p.kind || 'print') + '">' + KIND_LABEL[p.kind || 'print'] + '</span>' +
+      '<span class="pprice">' + priceCell(p) + '</span>' +
+      '<span class="pactions" style="width:180px">' +
+        '<button class="abtn small" data-edit title="Калькулятор виробу">Змінити</button>' +
+        '<button class="abtn small" data-dup title="Дублювати">Копія</button>' +
+        '<button class="abtn small danger" data-del title="Видалити">Видалити</button>' +
+      '</span>';
+    row.addEventListener('click', function (e) {
+      if (e.target.closest('button')) return;
+      openEditor(i);
+    });
+    row.querySelector('[data-edit]').addEventListener('click', function () { openEditor(i); });
+    row.querySelector('[data-dup]').addEventListener('click', function () { duplicateProduct(i); });
+    row.querySelector('[data-del]').addEventListener('click', function () { deleteProduct(i); });
+    list.appendChild(row);
+  });
+  if (!shown) list.innerHTML = '<div class="empty-note">Нічого не знайдено за цим фільтром</div>';
+}
+function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function productById(id) { return PROD.find(function (x) { return x.id === id; }); }
+
+function duplicateProduct(i) {
+  const src = PROD[i];
+  const copy = deepClone(src);
+  copy.id = 'custom_' + Date.now().toString(36);
+  copy.name = src.name + ' (копія)';
+  PROD.splice(i + 1, 0, copy);
+  saveState(); renderProducts();
+  toast('Дубльовано: ' + copy.name);
+}
+function deleteProduct(i) {
+  const p = PROD[i];
+  const usedBy = PROD.filter(function (x) { return x.kind === 'package' && (x.items || []).some(function (it) { return it.id === p.id; }); });
+  let msg = 'Видалити «' + p.name + '»? Публікація застосує видалення на сайті.';
+  if (usedBy.length) msg = '«' + p.name + '» входить у пакунки: ' + usedBy.map(function (x) { return x.name; }).join(', ') + '. Все одно видалити?';
+  if (!confirm(msg)) return;
+  PROD.splice(i, 1);
+  saveState(); renderProducts();
+  toast('Видалено: ' + p.name);
+}
+
+/* ---------- Категорії та підкатегорії ---------- */
+function renderCats() {
+  const box = document.getElementById('catsList');
+  if (!box) return;
+  box.innerHTML = '';
+  CATSD.forEach(function (c, ci) {
+    const used = PROD.filter(function (p) { return p.category === c.key; }).length;
+    const row = document.createElement('div');
+    row.className = 'catrow';
+    row.innerHTML =
+      '<div class="cat-main">' +
+        '<span class="catkey">' + esc(c.key) + '</span>' +
+        '<input class="cat-name" value="' + esc(c.label) + '" data-f="label" title="Назва категорії (сайт)">' +
+        '<input class="cat-short" value="' + esc(c.short || c.label) + '" data-f="short" title="Коротка назва (фільтри)">' +
+        '<input class="cat-icon" value="' + esc(c.icon || '') + '" data-f="icon" maxlength="4" title="Символ для сайту (необов\u2019язково)">' +
+        '<input value="' + esc(c.desc || '') + '" data-f="desc" style="flex:1;min-width:180px" title="Опис категорії (сайт)">' +
+        '<span class="catcnt">виробів: ' + used + '</span>' +
+        '<button class="abtn small danger" data-delcat>Видалити</button>' +
+      '</div>' +
+      '<div class="subs">' +
+        (c.subs || []).map(function (s, si) {
+          const cnt = PROD.filter(function (p) { return p.category === c.key && p.subcategory === s; }).length;
+          return '<span class="subchip">' + esc(s) + ' <b style="color:var(--text-dim);font-weight:600">' + cnt + '</b><button data-delsub="' + si + '" title="Видалити підкатегорію">×</button></span>';
+        }).join('') +
+        '<span class="subadd"><input placeholder="нова підкатегорія…" data-newsub><button class="abtn small" data-addsub>Додати підкатегорію</button></span>' +
+      '</div>';
+    row.querySelectorAll('.cat-main input[data-f]').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        c[inp.dataset.f] = inp.value;
+        saveState(); renderCats(); renderCatOptions(); renderProducts();
+      });
+    });
+    row.querySelector('[data-delcat]').addEventListener('click', function () { deleteCategory(ci); });
+    const newSub = row.querySelector('[data-newsub]');
+    function addSub() {
+      const v = (newSub.value || '').trim();
+      if (!v) return;
+      if (!c.subs) c.subs = [];
+      if (c.subs.some(function (s) { return s.toLowerCase() === v.toLowerCase(); })) { newSub.value = ''; return; }
+      c.subs.push(v);
+      newSub.value = '';
+      saveState(); renderCats(); renderCatOptions(); renderProducts();
+    }
+    row.querySelector('[data-addsub]').addEventListener('click', addSub);
+    newSub.addEventListener('keydown', function (e) { if (e.key === 'Enter') addSub(); });
+    row.querySelectorAll('[data-delsub]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        c.subs.splice(parseInt(btn.dataset.delsub, 10), 1);
+        saveState(); renderCats(); renderCatOptions(); renderProducts();
+      });
+    });
+    box.appendChild(row);
+  });
+}
+function addCategory() {
+  let key = 'cat_' + Date.now().toString(36);
+  const c = { key: key, label: 'Нова категорія', short: 'Нова', icon: '', desc: '', subs: [], color: CAT_PALETTE[CATSD.length % CAT_PALETTE.length] };
+  CATSD.push(c);
+  saveState(); renderCats(); renderCatOptions(); renderProducts(); updateBadges();
+  toast('Категорію додано — задайте назву');
+}
+function deleteCategory(ci) {
+  const c = CATSD[ci];
+  const used = PROD.filter(function (p) { return p.category === c.key; }).length;
+  if (used) { toast('Видалити не можна: ' + used + ' виробів у цій категорії'); return; }
+  if (!confirm('Видалити категорію «' + c.label + '» з усіма її підкатегоріями?')) return;
+  CATSD.splice(ci, 1);
+  saveState(); renderCats(); renderCatOptions(); renderProducts(); updateBadges();
+  toast('Категорію видалено');
+}
+
+/* ---------- Редактор виробу (калькулятор) ---------- */
+function openEditor(i) {
+  edIndex = i;
+  edDraft = i >= 0 ? deepClone(PROD[i]) : blankProduct();
+  document.getElementById('edTitle').textContent = i >= 0 ? ('№' + String(i + 1).padStart(3, '0') + ' — калькулятор виробу') : 'Новий виріб';
+  document.getElementById('edSub').textContent = 'Зміни застосовуються після «Зберегти» і потрапляють на сайт після «Опублікувати»';
+  document.getElementById('editorOv').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderEditor();
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow = ''; }
+function closeEditor() { closeModal('editorOv'); edDraft = null; }
+
+function blankProduct() {
+  return {
+    id: 'custom_' + Date.now().toString(36),
+    name: '', category: CATSD.length ? CATSD[0].key : 'polygraphy', subcategory: '', icon: '📄', desc: '',
+    kind: 'print',
+    defaultW: 210, defaultH: 297, defaultPaper: 'coated_130', allowedPapers: ['coated_130'],
+    defaultColor: '4+4', minQty: 25, priceFrom: '',
+    defaultLam: 'none',
+    pages: 1, pageStep: 4, selfCover: true, coverPaper: 'coated_250', coverColor: '4+4', coverLam: 'none',
+    unitPrice: 0, applyMethod: 'друк лого',
+    tiers: [{ qty: 1, price: 1000 }], photo: '', maxQty: 1000,
+    pkgPrice: 0, items: [],
+  };
+}
+function selHtml(opts, val, attrs) {
+  return '<select ' + (attrs || '') + '>' + opts.map(function (o) {
+    return '<option value="' + esc(o[0]) + '"' + (o[0] === val ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+  }).join('') + '</select>';
+}
+function paperOpts() { return Object.keys(P.paper).map(function (k) { return [k, k + ' — ' + P.paper[k].name]; }); }
+function lamOpts() { return Object.keys(P.lamination).map(function (k) { return [k, P.lamination[k].name]; }); }
+function colorOpts() { return [['1+0', '1+0 (Ч/Б 1 ст.)'], ['1+1', '1+1 (Ч/Б 2 ст.)'], ['4+0', '4+0 (Колір 1 ст.)'], ['4+4', '4+4 (Колір 2 ст.)']]; }
+
+function renderEditor() {
+  const d = edDraft;
+  const finKeys = [['scoring', 'Біговка'], ['folding', 'Фальцювання'], ['corners', 'Скруглення'], ['hole', 'Отвір'],
+    ['staples', 'Скоби'], ['spring', 'Пружина'], ['plotter', 'Плотер'], ['perforation', 'Перфорація']];
+  const subs = subsOf(d.category);
+  const subSel = '<option value="">— без підкатегорії —</option>' + subs.map(function (s) {
+    return '<option value="' + esc(s) + '"' + (d.subcategory === s ? ' selected' : '') + '>' + esc(s) + '</option>';
+  }).join('');
+  let html = '';
+
+  html += '<div class="fgrid mb14">' +
+    '<div class="fg span2"><label>Назва виробу</label><input id="ed-name" value="' + esc(d.name) + '"></div>' +
+    '<div class="fg"><label>Категорія</label>' + selHtml(CATSD.map(function (c) { return [c.key, c.label]; }), d.category, 'id="ed-cat"') + '</div>' +
+    '<div class="fg"><label>Підкатегорія</label><select id="ed-sub">' + subSel + '</select></div>' +
+    '<div class="fg span2"><label>Тип (рушій ціни)</label>' + selHtml([['print', 'Друк на А3'], ['merch', 'Мерч (готові вироби)'], ['package', 'Пакунок-комплект'], ['simple', 'Простий товар (широкоформатка, сувеніри)']], d.kind || 'print', 'id="ed-kind"') + '</div>' +
+    '<div class="fg span4"><label>Опис (у базі та ТЗ)</label><input id="ed-desc" value="' + esc(d.desc || '') + '"></div>' +
+    '<div class="fg"><label>Мін. тираж</label><input type="number" id="ed-minqty" value="' + (d.minQty || 1) + '"></div>' +
+    '</div>';
+
+  const kind = d.kind || 'print';
+  if (kind === 'simple') {
+    const tiers = (d.tiers && d.tiers.length ? d.tiers : [{ qty: 1, price: 0 }]);
+    html += '<div class="sec-title">Щаблі ціни <span class="hint">«від N шт — ціна за 1 шт»; приклад: рол-ап 2×0,85 — від 1 шт 2500 ₴, від 10 шт — 2200 ₴/шт</span></div>' +
+      '<div id="ed-tiers" class="mb14">' + tiers.map(function (t, i) {
+        return '<div class="tier-row">' +
+          '<span class="tr-label">від</span>' +
+          '<input type="number" min="1" step="1" value="' + t.qty + '" data-ti="' + i + '" data-tf="qty">' +
+          '<span class="tr-label">шт —</span>' +
+          '<input type="number" min="0" step="0.01" value="' + t.price + '" data-ti="' + i + '" data-tf="price">' +
+          '<span class="tr-label">₴/шт</span>' +
+          '<button class="del-row" data-tdel="' + i + '" title="Видалити щабель">×</button>' +
+        '</div>';
+      }).join('') + '</div>' +
+      '<button class="abtn small mb14" onclick="addTier()">Додати щабель ціни</button>' +
+      '<div class="fgrid mb14">' +
+      '<div class="fg"><label>Макс. тираж, шт</label><input type="number" id="ed-maxqty" min="1" value="' + (d.maxQty || 1000) + '"></div>' +
+      '</div>' +
+      '<p style="font-size:11px;color:var(--text-dim)">Формула: тираж × ціна поточного щабля. Препресс і макетування включені у вказану ціну — на сайті показується «Макетування: +».</p>';
+  } else if (kind === 'print') {
+    html += '<div class="sec-title">Формат і друк</div><div class="fgrid mb14">' +
+      '<div class="fg"><label>Ширина, мм</label><input type="number" id="ed-w" value="' + d.defaultW + '"></div>' +
+      '<div class="fg"><label>Висота, мм</label><input type="number" id="ed-h" value="' + d.defaultH + '"></div>' +
+      '<div class="fg"><label>Папір за замовч.</label>' + selHtml(paperOpts(), d.defaultPaper, 'id="ed-paper"') + '</div>' +
+      '<div class="fg"><label>Кольоровість</label>' + selHtml(colorOpts(), d.defaultColor || '4+4', 'id="ed-color"') + '</div>' +
+      '<div class="fg span2"><label>Ламінація за замовч.</label>' + selHtml(lamOpts(), d.defaultLam || 'none', 'id="ed-lam"') + '</div>' +
+      '<div class="fg span4"><label>Дозволені папери (в калькуляторі)</label><div class="checks" id="ed-papers">' +
+        Object.keys(P.paper).map(function (k) {
+          const on = (d.allowedPapers || []).includes(k);
+          return '<label class="chk' + (on ? ' on' : '') + '"><input type="checkbox" value="' + k + '"' + (on ? ' checked' : '') + '>' + esc(P.paper[k].name) + '</label>';
+        }).join('') + '</div></div>' +
+      '</div>';
+    html += '<div class="sec-title">Постдрук за замовчуванням</div><div class="checks mb14" id="ed-fin">' +
+      finKeys.map(function (f) {
+        const on = !!d['default' + f[0].charAt(0).toUpperCase() + f[0].slice(1)];
+        return '<label class="chk' + (on ? ' on' : '') + '"><input type="checkbox" value="' + f[0] + '"' + (on ? ' checked' : '') + '>' + f[1] + '</label>';
+      }).join('') + '</div>';
+    html += '<div class="sec-title">Багатосторінкове видання <span class="hint">брошури/каталоги/блокноти; 1 = односторінковий</span></div>' +
+      '<div class="fgrid mb14">' +
+      '<div class="fg"><label>Сторінок (полос)</label><input type="number" id="ed-pages" value="' + (d.pages || 1) + '" min="1"></div>' +
+      '<div class="fg"><label>Крок сторінок</label><input type="number" id="ed-pagestep" value="' + (d.pageStep || 4) + '" min="1"></div>' +
+      '<div class="fg span2"><label>Обкладинка</label><div class="checks">' +
+        '<label class="chk' + (d.pages && !d.selfCover ? ' on' : '') + '"><input type="checkbox" id="ed-hascover"' + (d.pages && !d.selfCover ? ' checked' : '') + '>окрема обкладинка</label>' +
+        '<label class="chk' + (!!d.selfCover && !!d.pages ? ' on' : '') + '"><input type="checkbox" id="ed-selfcover"' + (d.selfCover && !!d.pages ? ' checked' : '') + '>самокришка</label>' +
+      '</div></div>' +
+      '<div class="fg"><label>Папір обкладинки</label>' + selHtml(paperOpts(), d.coverPaper || 'coated_250', 'id="ed-coverpaper"') + '</div>' +
+      '<div class="fg"><label>Колір обкладинки</label>' + selHtml(colorOpts(), d.coverColor || '4+4', 'id="ed-covercolor"') + '</div>' +
+      '<div class="fg"><label>Ламінація обкладинки</label>' + selHtml(lamOpts(), d.coverLam || 'none', 'id="ed-coverlam"') + '</div>' +
+      '</div>';
+  } else if (kind === 'merch') {
+    html += '<div class="sec-title">Мерч — ціна готового виробу з нанесенням</div><div class="fgrid mb14">' +
+      '<div class="fg"><label>Ціна за 1 шт, ₴</label><input type="number" step="1" id="ed-unitprice" value="' + (d.unitPrice || 0) + '"></div>' +
+      '<div class="fg span3"><label>Спосіб нанесення лого</label><input id="ed-apply" value="' + esc(d.applyMethod || 'друк лого') + '"></div>' +
+      '</div>' +
+      '<p style="font-size:11px;color:var(--text-dim)">Загалом = тираж × ціна/шт + допечатна підготовка макету (+). Друк на А3 не застосовується.</p>';
+  } else if (kind === 'package') {
+    html += '<div class="sec-title">Пакунок — склад комплекту <span class="hint">сума компонентів − 10% комплект-знижка</span></div>' +
+      '<div class="fg mb14" style="max-width:220px"><label>Фіксована ціна (якщо без складу), ₴/компл</label><input type="number" step="1" id="ed-pkgprice" value="' + (d.pkgPrice || 0) + '"></div>' +
+      '<div id="ed-pkgitems" class="mb14"></div>' +
+      '<button class="abtn small" onclick="addPkgItem()">Додати позицію в комплект</button>';
+  }
+
+  /* ФОТО — для ВСІХ типів виробів: URL + завантаження файлу на GitHub */
+  html += '<div class="sec-title">Фото виробу <span class="hint">показується у калькуляторі та базі замість мокапа за номером</span></div>' +
+    '<div class="fgrid mb14">' +
+    '<div class="fg span3"><label>Фото — URL (пряме посилання)</label><input id="ed-photo" value="' + esc(d.photo || '') + '" placeholder="https://raw.githubusercontent.com/…/photos/rollup.jpg"></div>' +
+    '<div class="fg"><label>Файл з комп\u2019ютера</label><input type="file" id="ed-photo-file" accept="image/*" style="display:none">' +
+      '<button type="button" class="abtn" id="ed-photo-btn" style="width:100%" onclick="document.getElementById(\'ed-photo-file\').click()">Завантажити на GitHub</button></div>' +
+    '</div>' +
+    '<div class="photo-prev mb14" id="ed-photo-prev"></div>';
+
+  document.getElementById('edForm').innerHTML = html;
+
+  // обробники, що миттєво перераховують прев'ю
+  ['ed-name', 'ed-cat', 'ed-sub', 'ed-desc', 'ed-minqty', 'ed-w', 'ed-h', 'ed-paper', 'ed-color', 'ed-lam',
+   'ed-pages', 'ed-pagestep', 'ed-coverpaper', 'ed-covercolor', 'ed-coverlam', 'ed-unitprice', 'ed-apply', 'ed-pkgprice',
+   'ed-maxqty', 'ed-photo'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', function () { collectEditor(); renderEditorLight(); });
+  });
+  // ЗМІНА ТИПУ — повне перебудовування форми (поля друку ↔ мерч ↔ простий ↔ пакунок)
+  const kindSel = document.getElementById('ed-kind');
+  if (kindSel) kindSel.addEventListener('change', function () { collectEditor(); renderEditor(); });
+  // ЗМІНА КАТЕГОРІЇ — перезбірка підкатегорій
+  const catSel = document.getElementById('ed-cat');
+  if (catSel) catSel.addEventListener('change', function () { collectEditor(); renderEditor(); });
+  document.querySelectorAll('#ed-papers input, #ed-fin input, #ed-selfcover, #ed-hascover').forEach(function (el) {
+    el.addEventListener('change', function () { collectEditor(); renderEditorLight(); });
+  });
+  if (kind === 'simple') bindTierInputs();
+  if (kind === 'package') renderPkgItems();
+  bindPhoto();
+  renderPreview();
+}
+/* Щаблі простого товару: редагування + додавання/видалення */
+function bindTierInputs() {
+  const box = document.getElementById('ed-tiers');
+  if (!box) return;
+  box.querySelectorAll('input[data-ti]').forEach(function (inp) {
+    inp.addEventListener('change', function () {
+      const i = parseInt(inp.dataset.ti, 10);
+      const f = inp.dataset.tf;
+      if (!edDraft.tiers[i]) return;
+      edDraft.tiers[i][f] = f === 'qty' ? Math.max(1, parseInt(inp.value, 10) || 1) : Math.max(0, num(inp.value));
+      renderPreview();
+    });
+  });
+  box.querySelectorAll('[data-tdel]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const i = parseInt(btn.dataset.tdel, 10);
+      edDraft.tiers.splice(i, 1);
+      if (!edDraft.tiers.length) edDraft.tiers.push({ qty: 1, price: 0 });
+      renderEditor();
+    });
+  });
+}
+/* Фото виробу: прев'ю + завантаження файлу на GitHub (усі типи виробів) */
+function bindPhoto() {
+  const inp = document.getElementById('ed-photo');
+  const ph = document.getElementById('ed-photo-prev');
+  if (ph) {
+    const url = (inp ? inp.value : (edDraft.photo || '')).trim();
+    ph.innerHTML = url
+      ? '<img src="' + esc(url) + '" alt="" onerror="this.style.display=\'none\'"><span>Попередній перегляд фото (як на сайті)</span>'
+      : '<span>Фото не вказано — сайт покаже мокап за номером або заглушку. Завантажте файл на GitHub або вставте пряме посилання.</span>';
+  }
+  if (inp && !inp.dataset.ghBound) {
+    inp.dataset.ghBound = '1';
+    inp.addEventListener('input', function () { if (edDraft) edDraft.photo = inp.value.trim(); bindPhoto(); });
+  }
+  const pf = document.getElementById('ed-photo-file');
+  if (pf && !pf.dataset.ghBound) {
+    pf.dataset.ghBound = '1';
+    pf.addEventListener('change', async function () {
+      const f = this.files && this.files[0]; this.value = '';
+      if (!f) return;
+      collectEditor();
+      const btn = document.getElementById('ed-photo-btn');
+      const oldLabel = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Завантаження…'; }
+      try {
+        const url = await ghUploadPhoto(f, edDraft.name || 'photo');
+        const pinp = document.getElementById('ed-photo');
+        if (pinp) pinp.value = url;
+        edDraft.photo = url;
+        renderEditorLight(); bindPhoto();
+        toast('Фото на GitHub — посилання вставлено');
+      } catch (e) {
+        toast('Фото не завантажилось: ' + e.message);
+      }
+      if (btn) { btn.disabled = false; btn.textContent = oldLabel || 'Завантажити на GitHub'; }
+    });
+  }
+}
+function addTier() {
+  collectEditor();
+  const t = (edDraft.tiers || []).slice().sort(function (a, b) { return a.qty - b.qty; });
+  const last = t.length ? t[t.length - 1] : { qty: 1, price: 0 };
+  edDraft.tiers = t;
+  edDraft.tiers.push({ qty: last.qty * 10, price: Math.round(last.price * 0.9 * 100) / 100 });
+  renderEditor();
+}
+/* легкий перерендер без втрати фокусу: тільки прев'ю і заголовок */
+function renderEditorLight() {
+  renderPreview();
+}
+function renderPkgItems() {
+  const box = document.getElementById('ed-pkgitems');
+  if (!box) return;
+  const others = PROD.filter(function (x) { return x.id !== edDraft.id; }).map(function (x) { return [x.id, x.name]; });
+  box.innerHTML = (edDraft.items || []).map(function (it, i) {
+    const comp = PROD.find(function (x) { return x.id === it.id; });
+    return '<div class="pkg-item-row">' +
+      selHtml(others, it.id, 'data-pkg-i="' + i + '" data-pkg-f="id"') +
+      '<input type="number" min="1" value="' + it.qty + '" data-pkg-i="' + i + '" data-pkg-f="qty" title="шт у 1 комплекті">' +
+      '<span style="font-size:10px;color:var(--text-dim);width:40px">шт/компл</span>' +
+      '<button class="del-row" data-pkg-del="' + i + '">✕</button></div>';
+  }).join('') || '<div class="empty-note" style="padding:10px">Склад порожній — буде використана фіксована ціна</div>';
+  box.querySelectorAll('[data-pkg-i]').forEach(function (el) {
+    el.addEventListener('change', function () {
+      const i = parseInt(el.dataset.pkgI, 10);
+      edDraft.items[i][el.dataset.pkgF] = el.dataset.pkgF === 'qty' ? Math.max(1, parseInt(el.value, 10) || 1) : el.value;
+      renderPreview();
+    });
+  });
+  box.querySelectorAll('[data-pkg-del]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      edDraft.items.splice(parseInt(el.dataset.pkgDel, 10), 1);
+      renderPkgItems(); renderPreview();
+    });
+  });
+}
+function addPkgItem() {
+  collectEditor();
+  if (!edDraft.items) edDraft.items = [];
+  const cand = PROD.find(function (x) { return x.id !== edDraft.id; });
+  edDraft.items.push({ id: cand ? cand.id : '', qty: 100 });
+  renderPkgItems(); renderPreview();
+}
+/* зібрати значення форми в edDraft */
+function collectEditor() {
+  const d = edDraft;
+  const g = function (id) { const el = document.getElementById(id); return el ? el.value : null; };
+  if (g('ed-name') !== null) d.name = g('ed-name');
+  if (g('ed-cat')) d.category = g('ed-cat');
+  if (g('ed-sub') !== null) d.subcategory = g('ed-sub');
+  if (g('ed-kind')) d.kind = g('ed-kind');
+  if (g('ed-desc') !== null) d.desc = g('ed-desc');
+  if (g('ed-minqty')) d.minQty = Math.max(1, parseInt(g('ed-minqty'), 10) || 1);
+  if (g('ed-photo') !== null) d.photo = g('ed-photo').trim();
+  if (d.kind === 'simple') {
+    if (!Array.isArray(d.tiers)) d.tiers = [{ qty: 1, price: 0 }];
+    d.maxQty = Math.max(1, parseInt(g('ed-maxqty'), 10) || 1000);
+    const t0 = simpleTiers(d)[0];
+    d.minQty = t0 ? t0.qty : 1;
+    d.priceFrom = t0 ? String(t0.price) : '0';
+    d.icon = d.icon || '📐';
+  } else if (d.kind === 'print') {
+    d.defaultW = num(g('ed-w'), d.defaultW) || d.defaultW;
+    d.defaultH = num(g('ed-h'), d.defaultH) || d.defaultH;
+    if (g('ed-paper')) d.defaultPaper = g('ed-paper');
+    if (g('ed-color')) d.defaultColor = g('ed-color');
+    if (g('ed-lam')) d.defaultLam = g('ed-lam');
+    d.allowedPapers = Array.prototype.map.call(document.querySelectorAll('#ed-papers input:checked'), function (el) { return el.value; });
+    document.querySelectorAll('#ed-fin input').forEach(function (el) {
+      const k = el.value, up = k.charAt(0).toUpperCase() + k.slice(1);
+      d['default' + up] = el.checked;
+    });
+    d.pages = Math.max(1, parseInt(g('ed-pages'), 10) || 1);
+    d.pageStep = Math.max(1, parseInt(g('ed-pagestep'), 10) || 4);
+    d.selfCover = !!(d.pages > 1 && document.getElementById('ed-selfcover') && document.getElementById('ed-selfcover').checked);
+    const hasCover = d.pages > 1 && document.getElementById('ed-hascover') && document.getElementById('ed-hascover').checked;
+    if (g('ed-coverpaper')) d.coverPaper = g('ed-coverpaper');
+    if (g('ed-covercolor')) d.coverColor = g('ed-covercolor');
+    if (g('ed-coverlam')) d.coverLam = g('ed-coverlam');
+    if (d.pages > 1) { if (hasCover) d.selfCover = false; } else { d.selfCover = true; }
+  } else if (d.kind === 'merch') {
+    d.unitPrice = num(g('ed-unitprice'), 0);
+    if (g('ed-apply') !== null) d.applyMethod = g('ed-apply');
+  } else {
+    d.pkgPrice = num(g('ed-pkgprice'), 0);
+  }
+}
+function renderPreview() {
+  const box = document.getElementById('edPreview');
+  if (!edDraft) { box.innerHTML = ''; return; }
+  collectEditorSoft();
+  const d = edDraft;
+  const kindNow = d.kind || 'print';
+  let tiers = [];
+  if (kindNow === 'package') tiers = [1, 2, 3, 5, 10];
+  else if (kindNow === 'merch') tiers = [10, 25, 50, 100, 250, 500, 1000];
+  else if (kindNow === 'simple') {
+    const st = simpleTiers(d);
+    const base = st.map(function (t) { return t.qty; });
+    [1, 2, 5, 10, 25, 50, 100].forEach(function (q) { if (!base.includes(q) && q <= maxQtyFor(d)) base.push(q); });
+    tiers = base.filter(function (q) { return q <= maxQtyFor(d); }).sort(function (a, b) { return a - b; }).slice(0, 9);
+  } else tiers = [25, 50, 100, 250, 500, 1000].filter(function (q) { return q <= maxQtyFor(d); });
+  const rows = tiers.map(function (q) {
+    const r = calcForProduct(d, q);
+    const extra = kindNow === 'simple' ? '<td>' + fmtUAH(r.simpleRate) + '/шт</td>' : '';
+    return '<tr><td>' + q + (kindNow === 'package' ? ' компл' : ' шт') + '</td>' + extra + '<td><b>' + fmtUAH(r.total) + '</b></td></tr>';
+  }).join('');
+  const head = kindNow === 'simple' ? '<tr><th>Тираж</th><th>ціна/шт</th><th>разом</th></tr>' : '<tr><th>Тираж</th><th>за одиницю</th><th>разом</th></tr>';
+  let meta = '', warn = '';
+  if (kindNow === 'simple') {
+    const st = simpleTiers(d);
+    meta = 'Щаблі: ' + (st.map(function (t) { return 'від ' + t.qty + ' шт — ' + fmtUAH(t.price) + '/шт'; }).join(' · ') || 'не задано') + ' · макс. ' + maxQtyFor(d) + ' шт';
+    if (!st.length) warn = 'Додайте хоча б один щабель ціни';
+    if (st.length && !(st[0].qty === 1 || st[0].qty <= 2)) warn = 'Перший щабель краще «від 1 шт» — інакше менші тиражі не порахуються';
+    if (!d.name) warn = 'Вкажіть назву виробу';
+  } else if (kindNow === 'print') {
+    const l = calcLayout(d.defaultW, d.defaultH);
+    meta = l.count + ' шт/аркуш А3 · корисна площа ' + calcForProduct(d, 100).waste + '%';
+    if (!d.name) warn = 'Вкажіть назву виробу';
+    if (!d.allowedPapers || !d.allowedPapers.length) warn = 'Оберіть хоча б один дозволений папір';
+  } else if (kindNow === 'merch') {
+    meta = (d.applyMethod || 'друк лого') + ' · ' + fmtUAH(d.unitPrice || 0) + '/шт + макетування (+)';
+  } else {
+    meta = (d.items && d.items.length ? d.items.length + ' позицій у комплекті · −10% за комплект' : 'фіксована ціна ' + fmtUAH(d.pkgPrice || 0));
+  }
+  box.innerHTML =
+    '<div class="preview-title">Живий прорахунок (як на сайті)</div>' +
+    '<div class="preview-total">' + fmtUAH(calcForProduct(d, demoQty(d)).total) + '</div>' +
+    '<div class="preview-meta">' + demoQty(d) + (kindNow === 'package' ? ' компл' : ' шт') + ' · ' + esc(d.name || 'без назви') + '</div>' +
+    '<table>' + head + rows + '</table>' +
+    '<div class="preview-meta" style="margin-top:8px">' + meta + '</div>' +
+    (warn ? '<div class="warn">' + warn + '</div>' : '');
+}
+function collectEditorSoft() { /* collectEditor чіпає фокус — для прев'ю достатньо чекбоксів/селектів */
+  const d = edDraft;
+  const sel = function (id) { const el = document.getElementById(id); return el ? el.value : null; };
+  const n = function (id) { const el = document.getElementById(id); return el ? num(el.value, null) : null; };
+  if (sel('ed-kind')) d.kind = sel('ed-kind');
+  if (sel('ed-sub') !== null) d.subcategory = sel('ed-sub');
+  const ph = document.getElementById('ed-photo');
+  if (ph && ph.value != null) d.photo = ph.value.trim();
+  if (d.kind === 'simple') {
+    const mq = n('ed-maxqty'); if (mq) d.maxQty = Math.max(1, Math.floor(mq));
+  } else if (d.kind === 'print') {
+    if (n('ed-w')) d.defaultW = n('ed-w');
+    if (n('ed-h')) d.defaultH = n('ed-h');
+    if (sel('ed-paper')) d.defaultPaper = sel('ed-paper');
+    if (sel('ed-color')) d.defaultColor = sel('ed-color');
+    if (sel('ed-lam')) d.defaultLam = sel('ed-lam');
+    const ap = Array.prototype.map.call(document.querySelectorAll('#ed-papers input:checked'), function (el) { return el.value; });
+    if (ap.length) d.allowedPapers = ap;
+    const pg = n('ed-pages'); if (pg) d.pages = Math.max(1, pg);
+    d.selfCover = d.pages > 1 && !!(document.getElementById('ed-selfcover') && document.getElementById('ed-selfcover').checked);
+    const hasCover = d.pages > 1 && !!(document.getElementById('ed-hascover') && document.getElementById('ed-hascover').checked);
+    if (hasCover) d.selfCover = false;
+    if (sel('ed-coverpaper')) d.coverPaper = sel('ed-coverpaper');
+    if (sel('ed-covercolor')) d.coverColor = sel('ed-covercolor');
+    if (sel('ed-coverlam')) d.coverLam = sel('ed-coverlam');
+  } else if (d.kind === 'merch') {
+    const up = n('ed-unitprice'); if (up != null) d.unitPrice = up;
+  } else {
+    const pp = n('ed-pkgprice'); if (pp != null) d.pkgPrice = pp;
+  }
+}
+function saveEditor() {
+  collectEditor();
+  const d = edDraft;
+  if (!d.name || !d.name.trim()) return toast('Вкажіть назву виробу');
+  if ((d.kind || 'print') === 'print' && !(d.allowedPapers || []).length) return toast('Оберіть дозволені папери');
+  if ((d.kind || 'print') === 'simple') {
+    const st = simpleTiers(d);
+    if (!st.length) return toast('Додайте хоча б один щабель ціни');
+    const dup = st.some(function (t, i) { return i && t.qty === st[i - 1].qty; });
+    if (dup) return toast('Щаблі мають різні кількості (від N шт)');
+    if (st.some(function (t) { return !(t.price > 0); })) return toast('Ціна щабля має бути більше нуля');
+    d.tiers = st;
+    d.minQty = st[0].qty;
+    d.priceFrom = String(st[0].price);
+    d.icon = d.icon || '📐';
+  }
+  if (edIndex >= 0) PROD[edIndex] = d;
+  else { PROD.push(d); toast('Виріб додано: ' + d.name); }
+  saveState(); renderProducts(); closeEditor();
+}
+
+/* ---------- Публікація ---------- */
+function buildOverride() {
+  return {
+    version: 2,
+    updatedAt: new Date().toISOString(),
+    generator: 'admin.html — альфа копі принт',
+    prices: P,
+    categories: CATSD,
+    products: PROD,
+  };
+}
+function downloadOverride() {
+  const js = buildOverrideJs();
+  const blob = new Blob([js], { type: 'text/javascript;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'catalog-override.js';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('catalog-override.js завантажено — див. інструкцію');
+}
+function openPublish() {
+  const log = document.getElementById('pubLog');
+  if (log) { log.innerHTML = ''; log.style.display = 'none'; }
+  document.getElementById('pubOv').classList.add('open');
+}
+
+/* ---------- GitHub-сховище: токен, публікація, завантаження, фото ---------- */
+const GH_LS = 'acp_admin_gh_v1';
+const GH_DEFAULT = { repo: 'lavandaaudit/alfa.copy.print', branch: '', token: '', dir: 'photos' };
+let GH = Object.assign({}, GH_DEFAULT);
+
+function ghLoadSettings() {
+  try { const s = JSON.parse(localStorage.getItem(GH_LS) || '{}'); if (s && typeof s === 'object') GH = Object.assign(GH, s); } catch (e) {}
+  if (!GH.repo) GH.repo = GH_DEFAULT.repo;
+  ghFillForm(); ghBadge();
+}
+function ghFillForm() {
+  const r = document.getElementById('gh-repo'); if (r) r.value = GH.repo || '';
+  const b = document.getElementById('gh-branch'); if (b) b.value = GH.branch || '';
+  const t = document.getElementById('gh-token'); if (t) t.value = GH.token || '';
+  const d = document.getElementById('gh-dir'); if (d) d.value = GH.dir || 'photos';
+}
+function ghReadForm() {
+  const g = function (id) { const el = document.getElementById(id); return el ? el.value.trim() : null; };
+  if (g('gh-repo') !== null) GH.repo = g('gh-repo').replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
+  if (g('gh-branch') !== null) GH.branch = g('gh-branch');
+  if (g('gh-token') !== null) GH.token = g('gh-token');
+  if (g('gh-dir') !== null) GH.dir = (g('gh-dir') || 'photos').replace(/^\/+|\/+$/g, '');
+  ghSaveSettings();
+}
+function ghSaveSettings() { try { localStorage.setItem(GH_LS, JSON.stringify(GH)); } catch (e) {} ghBadge(); }
+function ghBadge() {
+  const b = document.getElementById('statGh'); if (!b) return;
+  b.textContent = GH.token ? 'GitHub: токен є' : 'GitHub: не підключено';
+}
+function ghToggleToken() {
+  const t = document.getElementById('gh-token'); if (!t) return;
+  const show = t.type === 'password';
+  t.type = show ? 'text' : 'password';
+  const btn = document.querySelector('[onclick="ghToggleToken()"]');
+  if (btn) btn.textContent = show ? 'Приховати токен' : 'Показати токен';
+}
+function ghLog(msg, cls) {
+  const box = document.getElementById('gh-log');
+  if (!box) return;
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = new Date().toLocaleTimeString('uk-UA') + ' · ' + msg;
+  box.appendChild(line); box.scrollTop = box.scrollHeight;
+}
+async function ghApi(method, path, bodyObj) {
+  const headers = { 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' };
+  if (GH.token) headers['Authorization'] = 'Bearer ' + GH.token;
+  let res;
+  try {
+    res = await fetch('https://api.github.com' + path, { method: method, headers: headers, body: bodyObj ? JSON.stringify(bodyObj) : undefined });
+  } catch (e) { throw new Error('немає зв\u2019язку з api.github.com'); }
+  let j = {};
+  try { j = await res.json(); } catch (e) {}
+  if (!res.ok) {
+    const hint = res.status === 401 ? ' — токен недійсний або помилковий'
+      : res.status === 403 ? ' — токен без права запису або вичерпано ліміт запитів'
+      : res.status === 404 ? ' — шлях не знайдено (перевірте репозиторій/гілку)' : '';
+    throw new Error('GitHub ' + res.status + ': ' + (j.message || 'помилка') + hint);
+  }
+  return j;
+}
+async function ghTest() {
+  ghReadForm();
+  if (!GH.repo) return toast('Вкажіть репозиторій: власник/назва');
+  ghLog('Перевірка ' + GH.repo + ' …');
+  try {
+    const r = await ghApi('GET', '/repos/' + GH.repo);
+    GH.branch = r.default_branch || GH.branch || 'main';
+    ghSaveSettings(); ghFillForm();
+    ghLog('З\u2019єднання ок. Гілка: ' + GH.branch + '. Права запису перевіряться при публікації.', 'ok');
+    toast('GitHub: з\u2019єднання встановлено');
+  } catch (e) { ghLog(e.message, 'bad'); toast('GitHub: ' + e.message); }
+}
+function b64utf8(s) { return btoa(unescape(encodeURIComponent(s))); }
+function utf8b64(s) { return decodeURIComponent(escape(atob(s))); }
+function buildOverrideJs() {
+  return '/* catalog-override.js — згенеровано адмінкою alfa.copy.print\n' +
+    '   Оновлено: ' + new Date().toLocaleString('uk-UA') + '\n' +
+    '   Сайт підтягує цей файл зі сховища GitHub автоматично. */\n' +
+    'window.CATALOG_OVERRIDE = ' + JSON.stringify(buildOverride()) + ';\n';
+}
+async function ghPublish() {
+  ghReadForm();
+  const log = document.getElementById('pubLog');
+  const show = function (msg, cls) {
+    if (!log) return;
+    log.style.display = '';
+    const line = document.createElement('div');
+    if (cls) line.className = cls;
+    line.textContent = msg; log.appendChild(line);
+  };
+  if (!GH.token) { show('Немає токена: відкрийте вкладку «GitHub», вставте токен і поверніться сюди.', 'bad'); switchTab('gh'); return; }
+  if (!GH.repo) { show('Вкажіть репозиторій у вкладці «GitHub».', 'bad'); switchTab('gh'); return; }
+  const btn = document.getElementById('pubGhBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Збереження…'; }
+  show('Публікація catalog-override.js у ' + GH.repo + ' (гілка ' + (GH.branch || 'main') + ') …');
+  try {
+    const path = '/repos/' + GH.repo + '/contents/catalog-override.js';
+    let sha = null;
+    try { const cur = await ghApi('GET', path + '?ref=' + encodeURIComponent(GH.branch || 'main')); sha = cur.sha; }
+    catch (e) { if (!/404/.test(e.message)) throw e; }
+    const body = { message: 'admin: оновлення каталогу (' + new Date().toLocaleString('uk-UA') + ')', content: b64utf8(buildOverrideJs()), branch: GH.branch || 'main' };
+    if (sha) body.sha = sha;
+    const r = await ghApi('PUT', path, body);
+    const url = r.commit && r.commit.html_url ? r.commit.html_url : ('https://github.com/' + GH.repo + '/commits/' + (GH.branch || 'main'));
+    show('Готово. Дані збережено у сховище — сайт підтягне їх автоматично.', 'ok');
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'див. коміт у репозиторії';
+    log.appendChild(a);
+    ghLog('catalog-override.js опубліковано (' + PROD.length + ' виробів).', 'ok');
+    toast('Опубліковано на GitHub');
+  } catch (e) {
+    show('Помилка: ' + e.message, 'bad');
+    ghLog('Публікація не вдалася: ' + e.message, 'bad');
+    toast('Не вдалося зберегти на GitHub');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = 'Зберегти на GitHub'; }
+}
+async function ghPull() {
+  ghReadForm();
+  if (!GH.repo) return toast('Вкажіть репозиторій');
+  if (!GH.token) return toast('Спершу вставте токен у полі вище');
+  ghLog('Завантаження даних з ' + GH.repo + ' …');
+  try {
+    const r = await ghApi('GET', '/repos/' + GH.repo + '/contents/catalog-override.js?ref=' + encodeURIComponent(GH.branch || 'main'));
+    const js = utf8b64(String(r.content || '').replace(/\s+/g, ''));
+    const start = js.indexOf('window.CATALOG_OVERRIDE');
+    if (start < 0) throw new Error('у файлі немає даних каталогу');
+    const eq = js.indexOf('=', start);
+    const end = js.lastIndexOf(';');
+    const ov = JSON.parse(js.slice(eq + 1, end));
+    if (!ov.prices || !Array.isArray(ov.products)) throw new Error('формат файлу не впізнано');
+    if (!confirm('Завантажити дані з GitHub? Поточні зміни в адмінці буде перезаписано.')) return;
+    P = ov.prices; PROD = ov.products;
+    if (Array.isArray(ov.categories) && ov.categories.length) CATSD = ov.categories;
+    saveState(); renderAll();
+    ghLog('Дані завантажено: ' + PROD.length + ' виробів · оновлено ' + (ov.updatedAt || '—') + '.', 'ok');
+    toast('Дані з GitHub завантажено');
+  } catch (e) {
+    if (/404/.test(e.message)) {
+      ghLog('У сховищі ще немає catalog-override.js — натисніть «Опублікувати» → «Зберегти на GitHub».', 'warn');
+      toast('У сховищі ще немає даних');
+    } else {
+      ghLog(e.message, 'bad');
+      toast('GitHub: ' + e.message);
+    }
+  }
+}
+function ghTranslit(s) {
+  const map = { 'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ie','ж':'zh','з':'z','и':'y','і':'i','ї':'i','й':'i','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'','ю':'iu','я':'ia','ы':'y','э':'e','ъ':'','ё':'e' };
+  return String(s || '').toLowerCase().split('').map(function (ch) { return map[ch] !== undefined ? map[ch] : ch; }).join('');
+}
+async function ghUploadPhoto(file, prodName) {
+  if (!GH.token) { switchTab('gh'); throw new Error('спершу вставте токен у вкладці «GitHub»'); }
+  if (!GH.repo) { switchTab('gh'); throw new Error('вкажіть репозиторій у вкладці «GitHub»'); }
+  const extRaw = (String(file.name).split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const ext = extRaw || 'jpg';
+  const slug = ghTranslit(prodName).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'photo';
+  const path = (GH.dir || 'photos') + '/' + slug + '-' + Date.now().toString(36) + '.' + ext;
+  const data = await new Promise(function (ok, bad) {
+    const rd = new FileReader();
+    rd.onload = function () { ok(String(rd.result).split(',')[1]); };
+    rd.onerror = function () { bad(new Error('не вдалося прочитати файл')); };
+    rd.readAsDataURL(file);
+  });
+  const r = await ghApi('PUT', '/repos/' + GH.repo + '/contents/' + path, { message: 'admin: фото — ' + (prodName || file.name), content: data, branch: GH.branch || 'main' });
+  ghLog('Фото завантажено: ' + path, 'ok');
+  return (r.content && r.content.download_url) || ('https://raw.githubusercontent.com/' + GH.repo + '/' + (GH.branch || 'main') + '/' + path);
+}
+
+/* ---------- Бекапи ---------- */
+function exportBackup() {
+  const json = JSON.stringify({ exportedAt: new Date().toISOString(), prices: P, products: PROD, categories: CATSD }, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'alfa-admin-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Бекап збережено');
+}
+function importBackup(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  const rd = new FileReader();
+  rd.onload = function () {
+    try {
+      const st = JSON.parse(rd.result);
+      if (!st.prices || !Array.isArray(st.products)) throw new Error('bad');
+      P = st.prices; PROD = st.products;
+      if (Array.isArray(st.categories) && st.categories.length) CATSD = st.categories;
+      saveState(); renderAll();
+      toast('Бекап відновлено');
+    } catch (e) { alert('Файл пошкоджений або не є бекапом адмінки'); }
+  };
+  rd.readAsText(f);
+  input.value = '';
+}
+function factoryReset() {
+  if (!confirm('Повернути заводські дані сайту? Усі незапубліковані зміни буде втрачено.')) return;
+  localStorage.removeItem(LS_KEY);
+  P = deepClone(FACTORY.prices); PROD = deepClone(FACTORY.productsCatalog);
+  CATSD = (FACTORY.categories && FACTORY.categories.length)
+    ? deepClone(FACTORY.categories)
+    : CATS.map(function (c) { return { key: c[0], label: c[1], short: c[1], icon: '', desc: '', subs: [] }; });
+  renderAll(); toast('Дані скинуто до заводських');
+}
+
+/* ---------- Запуск ---------- */
+function renderAll() {
+  renderScalars(); renderPapers(); renderLam(); renderFin(); renderTiers();
+  renderCats(); renderCatOptions(); renderProducts(); updateBadges();
+}
+function boot() {
+  loadState(); renderAll(); ghLoadSettings();
+}
+if (sessionStorage.getItem('acp_admin_ok') === '1') {
+  document.getElementById('gate').style.display = 'none';
+  ['app', 'app2', 'app3'].forEach(function (id) { document.getElementById(id).style.display = ''; });
+  boot();
+}
+</script>
+</body>
+</html>

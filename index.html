@@ -3285,11 +3285,12 @@
     const TOTAL_PRODUCTS = productsCatalog.length;
 
     /* TASK 22: АДМІНКА — оверрайд цін/виробів із catalog-override.js.
-       Файл генерує admin.html («Опублікувати»). Порядок дій:
+       Файл генерує admin.html («Опублікувати» → «Зберегти на GitHub») — він сам
+       комітить його у репозиторій lavandaaudit/alfa.copy.print. Порядок дій:
        1) <script src="catalog-override.js"> поруч з index.html (синхронно, до init)
-       2) якщо локального немає — тягнемо з GitHub Pages (ADMIN_OVERRIDE_URL)
+       2) якщо локального немає — тягнемо зі сховища (ADMIN_OVERRIDE_URL)
        3) застосовуємо ДО DOMContentLoaded → калькулятор/база одразу з новими цінами */
-    const ADMIN_OVERRIDE_URL = 'https://lavandaaudit.github.io/alfa_admin/catalog-override.js'; // за потреби замініть URL
+    const ADMIN_OVERRIDE_URL = 'https://lavandaaudit.github.io/alfa.copy.print/catalog-override.js'; // сховище сайту й адмінки
     window.applyCatalogOverride = function (ov) {
       try {
         if (!ov || typeof ov !== 'object') return;
