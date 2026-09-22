@@ -112,6 +112,39 @@
 
     .brand-text span { color: var(--accent-yellow); }
 
+    /* TASK 21: панель сайтів у шапці — маленькі кнопки біля лого.
+       Новий сайт = новий об'єкт у масиві SITES_PANEL — панель росте сама. */
+    .topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .sites-panel {
+      display: flex; align-items: center; gap: 4px;
+      padding: 3px; background: #0e1017;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      overflow-x: auto; scrollbar-width: none; max-width: 44vw;
+    }
+    .sites-panel::-webkit-scrollbar { display: none; }
+    .topsite {
+      display: inline-flex; align-items: baseline; gap: 1px;
+      padding: 4px 8px; background: #12151f; border: 1px solid #252b3d;
+      font-family: var(--font-display); font-size: 8.5px; letter-spacing: .07em;
+      text-transform: uppercase; color: #dfe4ee; text-decoration: none;
+      white-space: nowrap; transition: all .15s ease;
+    }
+    .topsite:hover {
+      border-color: rgba(255,222,0,.55); box-shadow: 0 0 12px rgba(255,222,0,.2);
+      transform: translateY(-1px);
+    }
+    .topsite .sl-thin { font-weight: 300; letter-spacing: .1em; color: #aeb8cc; }
+    .topsite-lightlogo .sl-bold { font-weight: 900; color: #ffd400; letter-spacing: .05em; }
+    .topsite-uposter .sl-k { font-weight: 900; color: #ff4d5e; }
+    .topsite-uposter .sl-thin { font-weight: 400; font-size: 7px; letter-spacing: .05em; }
+    .topsite-uposter .sl-bold { font-weight: 900; color: #fff; }
+    .topsite-alfaeu { text-transform: none; font-size: 9.5px; }
+    .topsite-alfaeu .sl-bold { font-weight: 800; color: #dfe4ee; }
+    .topsite-alfaeu .sl-eu { font-weight: 900; color: var(--accent-yellow); }
+
+    /* TASK 20: смугу навігації з шапки ЗАБРАНО — «Калькулятор / База / Тарифи»
+       живуть лише у футері-плашці в кінці сайту. Шапка стала на 42px вища. */
+
     .nav-tabs {
       display: flex;
       gap: 4px;
@@ -993,7 +1026,7 @@
   
     /* ==== Workspace v10: AI доковано зліва + каталог + компактний калькулятор ==== */
     .workspace { display: grid; grid-template-columns: 304px minmax(0, 1fr); gap: 14px; padding: 14px 20px; width: 100%; max-width: 1800px; margin: 0 auto; align-items: start; }
-    .ws-ai { position: sticky; top: 66px; height: calc(100vh - 80px); min-height: 430px; }
+    .ws-ai { position: sticky; top: 66px; height: calc(100vh - 80px); min-height: 430px; } /* TASK 20: nav-strip знято */
     .ws-ai .ai-panel { position: relative; top: 0; left: 0; width: 100%; max-width: none; height: 100%; max-height: none; }
     .ws-ai .ai-fab { position: relative; top: 0; left: 0; width: 100%; height: 54px; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 16px; animation: none; }
     .ws-ai .ai-fab .ai-fab-label { font-size: 10px; }
@@ -1002,7 +1035,7 @@
     .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1fr) 368px; gap: 14px; align-items: start; width: 100%; }
     /* Калькулятор — центральна (перша) колонка; каталог — права рейка */
     .calc-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; order: -1; }
-    .dashboard-grid > aside.panel { position: sticky; top: 66px; max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+    .dashboard-grid > aside.panel { position: sticky; top: 66px; max-height: calc(100vh - 80px); display: flex; flex-direction: column; } /* TASK 20 */
     .dashboard-grid > aside.panel .product-items-list { flex: 1 1 auto; min-height: 0; max-height: none; }
     /* ГОЛОВНИЙ КАЛЬКУЛЯТОР (центральна колонка) — великий і зрозумілий */
     .calc-col .panel-header { padding: 12px 18px; }
@@ -1053,8 +1086,9 @@
       .ws-ai .ai-fab .ai-fab-label { display: none; }
       .ws-ai .ai-panel { width: calc(100vw - 16px); left: 8px; bottom: 8px; height: min(74vh, 560px); }
       .topbar { height: auto; flex-wrap: wrap; padding: 8px 12px; gap: 8px; }
-      .nav-tabs { order: 3; width: 100%; }
       .phone-contact { display: none; }
+      .topbar-left { flex-wrap: wrap; row-gap: 5px; width: 100%; }
+      .sites-panel { max-width: 100%; }
     }
   </style>
   <style id="v12calc">
@@ -1062,7 +1096,7 @@
     .calc-grid { display: grid; grid-template-columns: minmax(0, 1fr) 356px; gap: 14px; align-items: start; }
     .calc-params { min-width: 0; }
     .calc-rail {
-      position: sticky; top: 66px;
+      position: sticky; top: 66px; /* TASK 20: шапка без nav-strip */
       display: flex; flex-direction: column;
       max-height: calc(100vh - 80px);
       background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md);
@@ -1354,8 +1388,42 @@
     .calc-photo-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
     .calc-photo-card .photo-label { display: flex; justify-content: space-between; align-items: center; font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-dim); }
     .calc-photo-card .photo-label-hint { font-weight: 600; letter-spacing: .3px; text-transform: none; color: var(--text-muted); font-size: 9.5px; }
-    .calc-photo-card .mockup-window { height: 236px; margin: 0; }
-    .calc-stack .price-card { position: sticky; top: 58px; z-index: 40; padding: 11px 14px 11px; background: linear-gradient(180deg, #181c2a, #0f1118); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+    .calc-photo-card .mockup-window { height: 344px; margin: 0; }
+    /* TASK 20: три зони фото-картки — підбренди | фото | бренд-картка */
+    .photo-grid { display: grid; grid-template-columns: minmax(0, 1fr) 198px; gap: 10px; align-items: stretch; }
+    .photo-side { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+    .photo-side-title { font-size: 9.5px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: var(--text-dim); padding: 1px 2px 0; }
+    .side-logo { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 10px 12px; background: linear-gradient(180deg, #171b28, #0d0f16); border: 1px solid #252b3d; text-decoration: none; transition: all .18s ease; min-height: 78px; }
+    .side-logo:hover { border-color: rgba(255,222,0,.55); box-shadow: 0 0 18px rgba(255,222,0,.18), inset 0 0 12px rgba(255,222,0,.05); transform: translateY(-1px); }
+    .side-logo-name { display: flex; align-items: baseline; gap: 2px; font-family: var(--font-display); font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: #dfe4ee; white-space: nowrap; }
+    .side-logo-desc { font-size: 9.8px; color: var(--text-dim); font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 4px; }
+    .side-logo-arrow { color: var(--accent-yellow); opacity: 0; transition: opacity .18s ease; font-size: 11px; }
+    .side-logo:hover .side-logo-arrow { opacity: 1; }
+    .side-logo-lightlogo .sl-thin { font-weight: 300; letter-spacing: .14em; color: #aeb8cc; }
+    .side-logo-lightlogo .sl-bold { font-weight: 900; color: #ffd400; letter-spacing: .08em; }
+    .side-logo-uposter .sl-k { font-weight: 900; color: #ff4d5e; }
+    .side-logo-uposter .sl-thin { font-weight: 400; font-size: 10px; letter-spacing: .1em; color: #aeb8cc; }
+    .side-logo-uposter .sl-bold { font-weight: 900; color: #fff; }
+    .side-logo-alfaeu { text-transform: none; }
+    .side-logo-alfaeu .sl-bold { font-weight: 800; color: #dfe4ee; font-size: 14.5px; }
+    .side-logo-alfaeu .sl-eu { font-weight: 900; color: var(--accent-yellow); }
+    .photo-side-right { justify-content: center; gap: 9px; padding: 12px; background: linear-gradient(200deg, #171b29, #0c0e15); border: 1px solid #252b3d; }
+    .photo-brand-logo { display: flex; align-items: center; gap: 8px; }
+    .photo-brand-name { font-family: var(--font-display); font-weight: 700; font-size: 12.5px; color: #fff; white-space: nowrap; }
+    .photo-brand-name span { color: var(--accent-yellow); }
+    .photo-brand-slogan { font-size: 11.5px; font-weight: 700; color: #cdd5e4; line-height: 1.45; }
+    .photo-brand-feats { display: flex; flex-direction: column; gap: 2px; font-size: 9.8px; color: var(--text-dim); font-weight: 600; }
+    .photo-brand-contacts { display: flex; flex-direction: column; gap: 3px; margin-top: auto; padding-top: 8px; border-top: 1px solid #232839; }
+    .photo-brand-contacts a { font-size: 10.5px; font-weight: 700; color: var(--text-muted); transition: color .15s ease; white-space: nowrap; }
+    .photo-brand-contacts a:hover { color: var(--accent-yellow); }
+    @media (max-width: 1330px) { .photo-grid { grid-template-columns: minmax(0, 1fr) 168px; } }
+    @media (max-width: 1240px) {
+      .photo-grid { grid-template-columns: 1fr; }
+      .photo-side-right { display: none; }
+      .phone-contact { display: none; } /* вільне місце — для панелі сайтів у шапці */
+      .calc-photo-card .mockup-window { height: 250px; }
+    }
+    .calc-stack .price-card { position: sticky; top: 66px; z-index: 40; padding: 11px 14px 11px; background: linear-gradient(180deg, #181c2a, #0f1118); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,.4); }
     .calc-stack .pc-total { font-size: 30px; }
     .pli-num { width: 46px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
     .pli-num i { display: none; }
@@ -1368,41 +1436,22 @@
     .mcr-qty-edit button:hover { color: var(--accent-yellow); }
     .mcr-qty-edit .mcr-qty-val { min-width: 36px; text-align: center; font-size: 10.5px; font-weight: 800; font-family: var(--font-mono); color: var(--text-main); display: flex; align-items: center; justify-content: center; border-left: 1px solid var(--border); border-right: 1px solid var(--border); padding: 0 3px; }
     @media (max-width: 720px) {
-      .calc-photo-card .mockup-window { height: 170px; }
+      .calc-photo-card .mockup-window { height: 185px; }
+      .photo-grid { gap: 8px; }
+      /* шапка: лого + панель сайтів переносяться на другий рядок */
+      .topbar-left { flex-wrap: wrap; row-gap: 5px; width: 100%; }
+      .sites-panel { max-width: 100%; }
       .calc-stack .price-card { position: static; box-shadow: none; }
       .pli-num { width: 42px; height: 36px; }
       .pli-num b { font-size: 15px; }
       .pli-thumb { width: 36px; height: 36px; }
     }
   
-    /* ===== v16: менші кнопки шапки, підбренди-логотипи · v17: тиражі й окрему панель ТЗ прибрано ===== */
-    .brand-logo { font-size: 12px; }
-    .nav-tab-btn { padding: 4px 9px; font-size: 10.5px; }
+    /* ===== v16: менші кнопки шапки · TASK 20: підбренди-логотипи переїхали у фото-картку ===== */
+    .brand-logo { font-size: 14px; }
     .btn-quick-order { font-size: 10.5px; padding: 5px 11px; }
     .btn-cart { font-size: 10.5px; padding: 5px 9px; gap: 4px; }
     .btn-cart-badge { min-width: 14px; height: 14px; font-size: 9px; }
-    .brand-chips { display: flex; align-items: center; gap: 6px; margin-left: 2px; }
-    .brand-chip {
-      display: inline-flex; align-items: baseline; gap: 1px;
-      font-family: var(--font-display); font-size: 9px; letter-spacing: .08em;
-      text-transform: uppercase; color: #7e879e; text-decoration: none;
-      background: linear-gradient(180deg, #141824, #0c0e15);
-      border: 1px solid #222736; padding: 4px 9px; white-space: nowrap;
-      transition: all .18s ease;
-    }
-    .brand-chip:hover {
-      color: #fff; border-color: rgba(255,222,0,.5);
-      box-shadow: 0 0 16px rgba(255,222,0,.22), inset 0 0 10px rgba(255,222,0,.06);
-      transform: translateY(-1px);
-    }
-    .chip-lightlogo .bc-thin { font-weight: 300; letter-spacing: .16em; }
-    .chip-lightlogo .bc-bold { font-weight: 900; color: #ffd400; letter-spacing: .1em; }
-    .chip-uposter .bc-k { font-weight: 900; color: #ff4d5e; }
-    .chip-uposter .bc-thin { font-weight: 400; font-size: 8px; letter-spacing: .12em; }
-    .chip-uposter .bc-bold { font-weight: 900; }
-    .chip-alfaeu { text-transform: none; font-size: 10.5px; }
-    .chip-alfaeu .bc-bold { font-weight: 800; color: #dfe4ee; }
-    .chip-alfaeu .bc-eu { font-weight: 900; color: var(--accent-yellow); }
     /* ТЗ дрібним шрифтом у картці ціни (під ціною) — повна інформація про виріб (v17) */
     .pc-spec {
       margin: 2px 0 10px; padding: 7px 9px 7px;
@@ -1419,9 +1468,132 @@
     .pc-spec-k { color: #757e96; white-space: nowrap; flex-shrink: 0; }
     .pc-spec-v { color: #c7cedf; font-weight: 600; min-width: 0; }
     .pc-spec-note { margin-top: 5px; font-size: 9px; color: #565e73; line-height: 1.5; }
-    @media (max-width: 1330px) { .brand-chips { display: none; } }
     @media (max-width: 720px) { .pc-spec { max-height: 220px; } .pc-spec-name { font-size: 10px; } .pc-spec-row { font-size: 9.5px; } }
   </style>
+  <style id="v19task">
+
+    /* ==== TASK 19: «Про виріб» — великий опис виробу (опиши все) ==== */
+    .prod-story {
+      background: #0d0f15;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 13px 8px;
+      margin-top: 12px;
+    }
+    .prod-story-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--accent-yellow);
+      margin-bottom: 8px;
+    }
+    .prod-story-row {
+      display: flex;
+      gap: 8px;
+      font-size: 11.2px;
+      line-height: 1.55;
+      padding: 4px 0;
+      border-bottom: 1px dashed #1c2030;
+    }
+    .prod-story-row:last-child { border-bottom: 0; }
+    .prod-story-k {
+      color: var(--accent-yellow);
+      opacity: 0.85;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 96px;
+      font-weight: 700;
+    }
+    .prod-story-v { color: #c7cedf; min-width: 0; }
+    @media (max-width: 720px) {
+      .prod-story-row { flex-direction: column; gap: 1px; }
+      .prod-story-k { min-width: 0; }
+    }
+
+    /* ==== TASK 19: футер сайту — лого, слоган, навігація, кнопки ==== */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      background: linear-gradient(180deg, #0d0f15, #090a0f);
+      margin-top: 6px;
+    }
+    .site-footer-inner {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 18px 20px 14px;
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    .sf-brand { display: flex; flex-direction: column; gap: 9px; }
+    .sf-slogan {
+      font-size: 12px;
+      color: #b9c2d4;
+      font-weight: 600;
+      line-height: 1.5;
+      max-width: 340px;
+    }
+    .sf-contacts { display: flex; flex-direction: column; gap: 3px; }
+    .sf-contacts a {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+    .sf-contacts a:hover { color: var(--accent-yellow); }
+    .sf-col { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+    .sf-col-title {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 5px;
+    }
+    .sf-link {
+      background: none;
+      border: none;
+      padding: 4px 8px;
+      margin-left: -8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+    }
+    .sf-link:hover { color: #fff; background: #161926; }
+    .sf-link.active { color: var(--accent-yellow); }
+    .sf-order {
+      margin-top: 7px;
+      background: var(--accent-yellow);
+      color: #000;
+      border: none;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .sf-order:hover { background: var(--accent-yellow-hover); }
+    .site-footer-bottom {
+      border-top: 1px solid #171b28;
+      padding: 10px 20px 13px;
+      text-align: center;
+      font-size: 10.5px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    @media (max-width: 900px) {
+      .site-footer-inner { grid-template-columns: 1fr; gap: 16px; }
+    }
+      </style>
   <style id="v18">
     /* ===== v18: Комерційна пропозиція — білий папір + друк PDF; матеріали наліпок ===== */
     .util-btn-row { flex-wrap: wrap; }
@@ -1532,29 +1704,27 @@
 
   <!-- TOPBAR -->
   <header class="topbar">
-    <div class="brand-logo">
-      <div class="brand-dots">
-        <span class="dot-c"></span>
-        <span class="dot-m"></span>
-        <span class="dot-y"></span>
-        <span class="dot-k"></span>
+    <div class="topbar-left">
+      <div class="brand-logo">
+        <div class="brand-dots">
+          <span class="dot-c"></span>
+          <span class="dot-m"></span>
+          <span class="dot-y"></span>
+          <span class="dot-k"></span>
+        </div>
+        <div class="brand-text">alfa.copy.<span>print</span></div>
       </div>
-      <div class="brand-text">alfa.copy.<span>print</span></div>
-    </div>
 
-    <div class="brand-chips" aria-label="Підбренди Альфи">
-      <a class="brand-chip chip-lightlogo" href="https://lightlogo.com.ua/" target="_blank" rel="noopener noreferrer" title="LightLogo — підбренд Альфи"><span class="bc-thin">LIGHT</span><span class="bc-bold">LOGO</span></a>
-      <a class="brand-chip chip-uposter" href="https://lavandaaudit.github.io/urban_posters_ua_eu/" target="_blank" rel="noopener noreferrer" title="kyiv.urban.poster — підбренд Альфи"><span class="bc-k">KYIV</span><span class="bc-thin">&middot;URBAN&middot;</span><span class="bc-bold">POSTER</span></a>
-      <a class="brand-chip chip-alfaeu" href="https://lavandaaudit.github.io/alfa_4/" target="_blank" rel="noopener noreferrer" title="alfa.eu — підбренд Альфи"><span class="bc-bold">alfa</span><span class="bc-eu">.eu</span></a>
-    </div>
-
-    <div class="nav-tabs">
-      <button class="nav-tab-btn active" onclick="switchMainView('calc', this)">⚡ Калькулятор</button>
-      <button class="nav-tab-btn" onclick="switchMainView('database', this)">📋 База всіх 111 виробів</button>
-      <button class="nav-tab-btn" onclick="switchMainView('a3price', this)">🏷️ Тарифи А3</button>
+      <!-- TASK 21: панель сайтів — маленькі кнопки біля лого (легко додавати нові) -->
+      <nav class="sites-panel" aria-label="Сайти родини Альфи">
+        <a class="topsite topsite-lightlogo" href="https://lightlogo.com.ua/" target="_blank" rel="noopener noreferrer" title="LightLogo — вишивка та лого"><span class="sl-thin">LIGHT</span><span class="sl-bold">LOGO</span></a>
+        <a class="topsite topsite-uposter" href="https://lavandaaudit.github.io/urban_posters_ua_eu/" target="_blank" rel="noopener noreferrer" title="kyiv.urban.poster — міські постери"><span class="sl-k">KYIV</span><span class="sl-thin">·URBAN·</span><span class="sl-bold">POSTER</span></a>
+        <a class="topsite topsite-alfaeu" href="https://lavandaaudit.github.io/alfa_4/" target="_blank" rel="noopener noreferrer" title="alfa.eu — Альфа в Європі"><span class="sl-bold">alfa</span><span class="sl-eu">.eu</span></a>
+      </nav>
     </div>
 
     <div class="topbar-right">
+      <a class="phone-contact" href="tel:+380443338822" title="Зателефонувати в друкарню">📞 (044) 333-88-22</a>
       <button class="btn-cart" id="btnCart" onclick="openCartModal()" title="Кошик">
         <span aria-hidden="true">🛒</span><span class="btn-cart-label">Кошик</span><span class="btn-cart-badge" id="cartBadge" style="display:none;">0</span>
       </button>
@@ -1739,7 +1909,7 @@
           <div class="control-row" id="packageControlWrap" style="display:none;">
             <div class="control-label"><span>2. Склад пакунка — редагуйте вільно</span><span id="pkgCountLabel"></span></div>
             <div class="pkg-editor" id="pkgItemsEditor"></div>
-            <div class="merch-note" style="margin-top:8px;">💡 Змінюйте <strong>кількість будь-якої позиції</strong>, додавайте нові вироби з каталогу або видаляйте зайве — ціна перерахується миттєво. Знижка комплекту <strong>−10%</strong> і допечатна підготовка всіх макетів уже включені.</div>
+            <div class="merch-note" style="margin-top:8px;">💡 Змінюйте <strong>кількість будь-якої позиції</strong>, додавайте нові вироби з каталогу або видаляйте зайве — ціна перерахується миттєво. Знижка комплекту <strong>−10%</strong>, макетування всіх макетів уже включено (+).</div>
           </div>
 
           <!-- 3. Color Printing -->
@@ -1930,48 +2100,13 @@
         <div class="panel-header">
           <span class="panel-title">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Розрахунок та наклади
+            Про виріб
           </span>
           <span style="font-size: 11px; color: var(--accent-yellow); font-weight: 700;" id="sumA3Count">25 арк. А3</span>
         </div>
 
         <div class="panel-body">
-          <!-- Розбивка вартості -->
-          <div class="breakdown-box">
-
-            <table class="breakdown-table">
-              <tr>
-                <td id="bdPrintLabel">Друк (4+4, 25 А3):</td>
-                <td id="bdPrintCost">537,50 ₴</td>
-              </tr>
-              <tr id="bdCoverRow" style="display: none;">
-                <td id="bdCoverPrintLabel">Друк обкладинки:</td>
-                <td id="bdCoverPrintCost">0 ₴</td>
-              </tr>
-              <tr>
-                <td>Папір блоку (<span id="bdPaper">130г</span>):</td>
-                <td id="bdPaperCost">60,00 ₴</td>
-              </tr>
-              <tr id="bdCoverRow2" style="display: none;">
-                <td id="bdCoverPaperLabel">Папір обкладинки:</td>
-                <td id="bdCoverPaperCost">0 ₴</td>
-              </tr>
-              <tr>
-                <td>Ламінація (<span id="bdLam">Матова 1+0</span>):</td>
-                <td id="bdLamCost">187,50 ₴</td>
-              </tr>
-              <tr>
-                <td>Постдрукарська обробка:</td>
-                <td id="bdFinCost">0,00 ₴</td>
-              </tr>
-              <tr>
-                <td>Допечатна підготовка макету:</td>
-                <td id="bdPrepress">500 ₴</td>
-              </tr>
-            </table>
-          </div>
-
-          <!-- Compact A3 Yield Indicator -->
+<!-- Compact A3 Yield Indicator -->
           <div class="a3-compact-box" id="a3CompactBox">
             <div class="a3-thumb-sheet" id="a3ThumbSheet">
               <!-- Grid mini cells -->
@@ -1984,6 +2119,7 @@
             </div>
           </div>
 
+          <div class="prod-story" id="prodStory" aria-label="Повний опис виробу"></div>
         </div>
       </section>
         </div><!-- /rail-details -->
@@ -2072,6 +2208,37 @@
     </div>
   </div>
   <!-- /.workspace -->
+
+  <!-- TASK 19: ФУТЕР — лого, слоган, навігація, кнопки -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="sf-brand">
+        <div class="brand-logo">
+          <div class="brand-dots"><span class="dot-c"></span><span class="dot-m"></span><span class="dot-y"></span><span class="dot-k"></span></div>
+          <div class="brand-text">alfa.copy.<span>print</span></div>
+        </div>
+        <div class="sf-slogan">Поліграфія повного циклу: розрахунок онлайн — тираж від 1 робочого дня</div>
+        <div class="sf-contacts">
+          <a href="tel:+380443338822" title="Зателефонувати в друкарню">📞 (044) 333-88-22</a>
+          <a href="mailto:2294598@gmail.com" title="Написати на пошту друкарні">✉️ 2294598@gmail.com</a>
+        </div>
+      </div>
+      <nav class="sf-col" aria-label="Навігація у футері">
+        <div class="sf-col-title">Навігація</div>
+        <button class="sf-link" onclick="switchMainView('calc', this)">⚡ Калькулятор</button>
+        <button class="sf-link" onclick="switchMainView('database', this)">📋 База виробів</button>
+        <button class="sf-link" onclick="switchMainView('a3price', this)">🏷️ Тарифи А3</button>
+        <button class="sf-order" onclick="openModal()">Замовити друк →</button>
+      </nav>
+      <div class="sf-col">
+        <div class="sf-col-title">Підбренди Альфи</div>
+        <a class="sf-link" href="https://lightlogo.com.ua/" target="_blank" rel="noopener noreferrer" title="LightLogo — підбренд Альфи">✨ LightLogo — вишивка та лого</a>
+        <a class="sf-link" href="https://lavandaaudit.github.io/urban_posters_ua_eu/" target="_blank" rel="noopener noreferrer" title="kyiv.urban.poster — підбренд Альфи">🖼️ kyiv.urban.poster — постери</a>
+        <a class="sf-link" href="https://lavandaaudit.github.io/alfa_4/" target="_blank" rel="noopener noreferrer" title="alfa.eu — підбренд Альфи">🇪🇺 alfa.eu — Альфа в Європі</a>
+      </div>
+    </div>
+    <div class="site-footer-bottom">© 2026 Альфамедіа · друкарня alfa.copy.print · Київ — офсетний друк А3, від макета до тиражу</div>
+  </footer>
 
   <!-- MODAL CHECKOUT -->
   <div class="modal-overlay" id="orderModal">
@@ -3103,7 +3270,7 @@
       { key: 'booklets', label: 'Буклети та багатосторінкові видання', short: 'Буклети', icon: '📖', desc: 'Буклети зі згинами, брошури на скобі/пружині, каталоги. Тираж до 1000 прим. — далі офсет.' },
       { key: 'office', label: 'Офісна документація', short: 'Офіс', icon: '🗂️', desc: 'Фірмові бланки, конверти, грамоти, презентації, блокноти, папки, меню.' },
       { key: 'gifts', label: 'Подарунки та календарі', short: 'Подарунки', icon: '🎁', desc: 'Листівки, запрошення, настільні та настінні календарі, плнінги, сувеніри.' },
-      { key: 'merch', label: 'Мерч з логотипом', short: 'Мерч', icon: '👕', desc: 'Одяг та аксесуари з вашим логотипом. Друк на готових виробах (DTF/термоперенесення): тираж × ціна/шт + 500 ₴ підготовка макету.' },
+      { key: 'merch', label: 'Мерч з логотипом', short: 'Мерч', icon: '👕', desc: 'Одяг та аксесуари з вашим логотипом. Друк на готових виробах (DTF/термоперенесення): тираж × ціна/шт + макетування (+).' },
       { key: 'packages', label: 'Готові пакунки', short: 'Пакунки', icon: '📦', desc: 'Комплексні набори поліграфії зі знижкою ~10%. Допечатна підготовка всіх макетів уже включена у ціну.' }
     ];
     const CATEGORY_KEYS = CATEGORY_META.map(c => c.key);
@@ -3365,6 +3532,7 @@
     function init() {
       // v15/v17: вертикальний стек калькулятора:
       // ФОТО → ЦІНА (sticky) + ТЗ дрібним шрифтом → ПАРАМЕТРИ → РОЗРАХУУНОК
+      // TASK 20: фото-картка — три зони: підбренди-логотипи | фото | бренд-картка
       (function restackCalc() {
         const grid = document.querySelector('.calc-grid');
         if (!grid || grid.dataset.restacked) return;
@@ -3379,8 +3547,24 @@
         const mw = price.querySelector('.mockup-window');
         const photo = document.createElement('div');
         photo.className = 'calc-photo-card';
-        photo.innerHTML = '<div class="photo-label"><span>Прев\u2019ю виробу</span><span class="photo-label-hint">клік — збільшити</span></div>';
-        if (mw) { price.removeChild(mw); photo.appendChild(mw); }
+        photo.innerHTML =
+          '<div class="photo-label"><span>Прев\u2019ю виробу</span><span class="photo-label-hint">клік — збільшити</span></div>' +
+          '<div class="photo-grid">' +
+            '<div class="mockup-window empty" id="mockupWindow" title="Мокап виробу"></div>' +
+            '<div class="photo-side photo-side-right" aria-label="Друкарня alfa.copy.print">' +
+              '<div class="photo-brand-logo">' +
+                '<span class="brand-dots"><span class="dot-c"></span><span class="dot-m"></span><span class="dot-y"></span><span class="dot-k"></span></span>' +
+                '<span class="photo-brand-name">alfa<span>.copy.</span>print</span>' +
+              '</div>' +
+              '<div class="photo-brand-slogan">Друк для тих, хто створює бізнес</div>' +
+              '<div class="photo-brand-feats"><span>· офсет А3 від 1 дня</span><span>· 111 виробів онлайн</span><span>· тиражні знижки</span></div>' +
+              '<div class="photo-brand-contacts">' +
+                '<a href="tel:+380443338822" title="Зателефонувати в друкарню">📞 (044) 333-88-22</a>' +
+                '<a href="mailto:2294598@gmail.com" title="Написати на пошту">✉️ 2294598@gmail.com</a>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        if (mw) { price.removeChild(mw); }
         // 3) новий порядок
         grid.classList.remove('calc-grid');
         grid.classList.add('calc-stack');
@@ -3609,7 +3793,7 @@
       // Мерч: нотатка про нанесення
       if (kind === 'merch' && cfg.product) {
         const note = document.getElementById('merchNoteBox');
-        if (note) note.innerHTML = '👕 <strong>' + (cfg.product.applyMethod || 'DTF-принт') + '</strong> на готових виробах. Формула: <strong>тираж × ' + cfg.product.unitPrice + ' ₴/шт + 500 ₴</strong> допечатна підготовка макету лого (разово). Розміри S–3XL, кольори на вибір — вкажіть у коментарі до замовлення.';
+        if (note) note.innerHTML = '👕 <strong>' + (cfg.product.applyMethod || 'DTF-принт') + '</strong> на готових виробах. Формула: <strong>тираж × ' + cfg.product.unitPrice + ' ₴/шт + макетування (+)</strong> — разово на замовлення. Розміри S–3XL, кольори на вибір — вкажіть у коментарі до замовлення.';
       }
 
       // Пакунок: редагований склад
@@ -3937,8 +4121,6 @@
       if (a3BoxRestore) a3BoxRestore.style.display = '';
       const kindInfoRestore = document.getElementById('kindInfoBox');
       if (kindInfoRestore) kindInfoRestore.style.display = 'none';
-      const tbodyRestore = document.querySelector('.breakdown-table tbody');
-      if (tbodyRestore && bdOriginalHTML) tbodyRestore.innerHTML = bdOriginalHTML;
 
       // Видимість контролів багатосторінкових видань
       const pagesWrap = document.getElementById('pagesControlWrap');
@@ -3960,34 +4142,6 @@
       document.getElementById('sumA3Count').textContent = res.hasCover ? `${res.blockSheets}+${res.coverSheets} арк. А3` : `${res.sheetsNeeded} арк. А3`;
       updateQtyLiveTotal(res);
 
-      // Breakdown table
-      if (res.isMultipage) {
-        document.getElementById('bdPrintLabel').textContent = `Друк блоку (${cfg.color}, ${res.pages} стор. = ${res.sheetsPerCopy} А3/прим.):`;
-        document.getElementById('bdPrintCost').textContent = formatUAH(res.blockPrintCost);
-        document.getElementById('bdCoverRow').style.display = res.hasCover ? '' : 'none';
-        document.getElementById('bdCoverRow2').style.display = res.hasCover ? '' : 'none';
-        if (res.hasCover) {
-          document.getElementById('bdCoverPrintLabel').textContent = `Друк обкладинки (${res.coverColor}, ${res.coverSheets} А3):`;
-          document.getElementById('bdCoverPrintCost').textContent = formatUAH(res.coverPrintCost);
-          document.getElementById('bdCoverPaperLabel').textContent = `Папір обкладинки (${prices.paper[cfg.coverPaperKey]?.name.split(' ')[0] || ''}):`;
-          document.getElementById('bdCoverPaperCost').textContent = formatUAH(res.coverPaperCost);
-        }
-        document.getElementById('bdPaper').textContent = prices.paper[cfg.paperKey]?.name.split(' ')[0] || '';
-        document.getElementById('bdPaperCost').textContent = formatUAH(res.blockPaperCost);
-      } else {
-        document.getElementById('bdPrintLabel').textContent = `Друк (${cfg.color}, ${res.sheetsNeeded} А3):`;
-        document.getElementById('bdPrintCost').textContent = formatUAH(res.printCost);
-        document.getElementById('bdCoverRow').style.display = 'none';
-        document.getElementById('bdCoverRow2').style.display = 'none';
-        document.getElementById('bdPaper').textContent = prices.paper[cfg.paperKey]?.name.split(' ')[0] || '';
-        document.getElementById('bdPaperCost').textContent = formatUAH(res.paperCost);
-      }
-      document.getElementById('bdLam').textContent = res.hasCover
-        ? (prices.lamination[cfg.coverLamKey]?.name || 'Без ламінації') + ' (обкладинка)'
-        : prices.lamination[cfg.laminationKey]?.name;
-      document.getElementById('bdLamCost').textContent = formatUAH(res.lamCost);
-      document.getElementById('bdFinCost').textContent = formatUAH(res.finCost);
-      document.getElementById('bdPrepress').textContent = formatUAH(res.prepressCost);
 
       // A3 Thumb Box
       if (res.isMultipage) {
@@ -4008,10 +4162,10 @@
 
       renderA3Thumb(res.layout);
       renderPcSpec();
+      renderProdStory(res);
     }
 
     // Розрахунок і рендер для мерчу та пакунків (калькулятор «трохи інший»)
-    let bdOriginalHTML = null;
     function recalcMerchPackage() {
       const kind = currentProductKind();
       const p = cfg.product;
@@ -4040,23 +4194,6 @@
       updateQtyLiveTotal(res);
       renderPkgItems();
 
-      // Розбивка: перебудовуємо tbody
-      const tbody = document.querySelector('.breakdown-table tbody');
-      if (!bdOriginalHTML) bdOriginalHTML = tbody.innerHTML;
-      if (kind === 'merch') {
-        tbody.innerHTML =
-          '<tr><td>Мерч (' + p.unitPrice + ' ₴ × ' + cfg.quantity + ' шт):</td><td>' + formatUAH(res.merchGoodsCost) + '</td></tr>' +
-          '<tr><td>Допечатна підготовка макету лого:</td><td>' + formatUAH(res.prepressCost) + '</td></tr>' +
-          '<tr><td>Ламінація:</td><td>' + formatUAH(0) + '</td></tr>' +
-          '<tr><td>Постдрукарська обробка:</td><td>' + formatUAH(0) + '</td></tr>';
-      } else {
-        tbody.innerHTML =
-          '<tr><td>Пакунок (' + cfg.quantity + ' компл. × ' + formatUAH(res.pkgUnit) + '):</td><td>' + formatUAH(res.total) + '</td></tr>' +
-          '<tr><td>Допечатна підготовка всіх макетів:</td><td>включена</td></tr>' +
-          '<tr><td>Постдрук та скріплення:</td><td>включені</td></tr>' +
-          '<tr><td>Комплект-знижка:</td><td style="color:#10b981">−10%</td></tr>';
-      }
-
       // A3-бокс ховаємо, замість нього — інформаційний
       const a3Box = document.getElementById('a3CompactBox');
       if (a3Box) a3Box.style.display = 'none';
@@ -4072,7 +4209,7 @@
           '<div class="a3-stats-col">' +
           '<div>Спосіб нанесення: <span class="a3-stat-highlight">' + (p.applyMethod || 'друк лого') + '</span></div>' +
           '<div>Базова ціна: <span class="a3-stat-highlight">' + p.unitPrice + ' ₴/шт</span></div>' +
-          '<div>Допечатна підготовка лого: <span class="a3-stat-highlight">500 ₴ разово</span></div>' +
+          '<div>Макетування лого: <span class="a3-stat-highlight">+</span></div>' +
           '<div>Розміри: <span style="color:#fff;">S–3XL, кольори на вибір (у коментарі)</span></div>' +
           '</div>';
       } else {
@@ -4081,12 +4218,13 @@
           '<div class="a3-stats-col">' +
           '<div style="font-weight:700;margin-bottom:4px;">Склад пакунка (на 1 компл.):</div>' +
           pkgItemsNow.map(it => { const cp = productsCatalog.find(x => x.id === it.id); return '<div style="font-size:11px;color:#fff;">• ' + (cp ? cp.name : it.id) + ' — ' + it.qty + ' шт</div>'; }).join('') +
-          '<div style="font-size:10.5px;color:#10b981;margin-top:4px;">Економія ~10% + препресс включений</div>' +
+          '<div style="font-size:10.5px;color:#10b981;margin-top:4px;">Економія ~10% + макетування включено (+)</div>' +
           '</div>';
       }
       info.style.display = '';
 
       renderPcSpec();
+      renderProdStory(res);
     }
 
     function renderA3Thumb(layout) {
@@ -4105,22 +4243,21 @@
 
     // --- View Switcher ---
     function switchMainView(viewId, btnEl) {
-      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
-      if (btnEl) {
-        btnEl.classList.add('active');
-      } else {
-        // fallback: find the matching button by onclick attribute content
-        document.querySelectorAll('.nav-tab-btn').forEach(b => {
-          if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${viewId}'`)) {
-            b.classList.add('active');
-          }
-        });
-      }
+      // TASK 20: верхню смугу навігації знято — активна кнопка синхронізується у футері-плашці
+      document.querySelectorAll('.sf-link').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.sf-link').forEach(b => {
+        const oc = b.getAttribute('onclick') || '';
+        if (oc.includes("'" + viewId + "'")) b.classList.add('active');
+      });
 
       document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active-view'));
       if (viewId === 'calc') document.getElementById('viewCalc').classList.add('active-view');
       if (viewId === 'database') document.getElementById('viewDatabase').classList.add('active-view');
       if (viewId === 'a3price') document.getElementById('viewA3Price').classList.add('active-view');
+      // перемикаємось з футера — прокручуємо до калькулятора, щоб зміну одразу було видно
+      if (btnEl && btnEl.closest && btnEl.closest('.site-footer')) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
 
     // --- Full All-Products Database Table ---
@@ -4181,12 +4318,12 @@
           ? '<div>Виріб: <strong>' + productCodeOf(p) + ' ' + calcProductNameS(cfg) + '</strong></div>' +
             '<div>Нанесення: <strong>' + (p.applyMethod || 'друк лого') + '</strong></div>' +
             '<div>Тираж: <strong>' + cfg.quantity + ' шт.</strong> × ' + p.unitPrice + ' ₴</div>' +
-            '<div>Допечатна підготовка макету лого: <strong>' + formatUAH(res.prepressCost) + '</strong></div>' +
+            '<div>Макетування лого: <strong>+</strong></div>' +
             '<div style="border-top: 1px solid #232738; margin-top: 6px; padding-top: 6px; color: var(--accent-yellow); font-size: 14px; font-weight: 800;">РАЗОМ: ' + formatUAH(res.total) + ' (' + formatUAH(res.unit) + ' / шт)</div>'
           : '<div>Пакунок: <strong>' + productCodeOf(p) + ' ' + calcProductNameS(cfg) + '</strong></div>' +
             '<div>Кількість комплектів: <strong>' + cfg.quantity + '</strong></div>' +
             '<div style="font-size: 11px; color: var(--text-muted);">Склад: ' + pkgItemsSpecText(true) + '</div>' +
-            '<div>Допечатна підготовка і постдрук: <strong>включені</strong></div>' +
+            '<div>Макетування і постдрук: <strong>+ (входять)</strong></div>' +
             '<div style="border-top: 1px solid #232738; margin-top: 6px; padding-top: 6px; color: var(--accent-yellow); font-size: 14px; font-weight: 800;">РАЗОМ: ' + formatUAH(res.total) + ' (' + cfg.quantity + ' × ' + formatUAH(res.unit) + ')</div>';
         document.getElementById('modalFormWrap').style.display = 'block';
         document.getElementById('modalSuccessWrap').style.display = 'none';
@@ -4208,7 +4345,7 @@
         <div>Друк блоку / Папір: <strong>${cfg.color}, ${prices.paper[cfg.paperKey]?.name}</strong></div>
         ${covLine}
         <div>Ламінація: <strong>${res.hasCover ? (prices.lamination[cfg.coverLamKey]?.name || 'Без ламінації') : (prices.lamination[cfg.laminationKey]?.name || 'Без ламінації')}</strong></div>
-        <div>Допечатна підготовка макету: <strong>${formatUAH(res.prepressCost)}</strong></div>
+        <div>Макетування: <strong>+</strong></div>
         <div style="border-top: 1px solid #232738; margin-top: 6px; padding-top: 6px; color: var(--accent-yellow); font-size: 14px; font-weight: 800;">
           РАЗОМ: ${formatUAH(res.total)} (${formatUAH(res.unit)} / шт)
         </div>
@@ -4258,7 +4395,7 @@
           'Нанесення': cfg.product.applyMethod || 'друк лого',
           'Тираж, шт': String(cfg.quantity),
           'Ціна за 1 шт (базова)': cfg.product.unitPrice + ' ₴',
-          'Допечатна підготовка макету лого': formatUAH(res.prepressCost),
+          'Макетування лого': '+',
           'Ціна за 1 шт': formatUAH(res.unit),
           'РАЗОМ': formatUAH(res.total),
           'Коментар': document.getElementById('fComment').value || '—',
@@ -4279,7 +4416,7 @@
           'Кількість комплектів': String(cfg.quantity),
           'Склад пакунка': pkgItemsSpecText(true),
           'Ціна за 1 комплект': formatUAH(res.pkgUnit),
-          'Допечатна підготовка': 'включена',
+          'Макетування': '+ (входить у комплект)',
           'РАЗОМ': formatUAH(res.total),
           'Коментар': document.getElementById('fComment').value || '—',
           email: document.getElementById('fEmail').value
@@ -4305,7 +4442,7 @@
         'Папір блоку': prices.paper[cfg.paperKey]?.name || cfg.paperKey,
         'Ламінація': res.hasCover ? (prices.lamination[cfg.coverLamKey]?.name || 'Без ламінації') : (prices.lamination[cfg.laminationKey]?.name || 'Без ламінації'),
         'Постдрукарська обробка': finList.length ? finList.join(', ') : '—',
-        'Допечатна підготовка макету': formatUAH(res.prepressCost),
+        'Макетування макету': '+',
         'Ціна за 1 шт': formatUAH(res.unit),
         'РАЗОМ': formatUAH(res.total),
         'Коментар': document.getElementById('fComment').value || '—',
@@ -4537,7 +4674,7 @@
           '\nБазова ціна: ' + cfg.product.unitPrice + ' ₴/шт' +
           '\nТираж: ' + cfg.quantity + ' шт.' +
           '\nВартість виробів: ' + formatUAH(res.merchGoodsCost) +
-          '\nДопечатна підготовка макету лого: ' + formatUAH(res.prepressCost) +
+          '\nМакетування лого: +' +
           '\nЦіна за 1 шт: ' + formatUAH(res.unit) +
           '\nРАЗОМ: ' + formatUAH(res.total);
       }
@@ -4547,7 +4684,7 @@
         return 'alfa.copy.print — ТЗ замовлення\nПакунок: ' + code + ' ' + name +
           '\nКількість комплектів: ' + cfg.quantity + ' компл.' +
           '\nСклад комплекту:\n' + itemsTxt +
-          '\nКомплект-знижка: −10%\nДопечатна підготовка і постдрук: включені' +
+          '\nКомплект-знижка: −10%\nМакетування і постдрук: + (входять)' +
           '\nЦіна за 1 комплект: ' + formatUAH(res.unit) +
           '\nРАЗОМ: ' + formatUAH(res.total);
       }
@@ -4557,10 +4694,111 @@
         '\nДрук: ' + cfg.color +
         '\nПапір: ' + (prices.paper[cfg.paperKey] ? prices.paper[cfg.paperKey].name : cfg.paperKey) +
         '\nЛамінація: ' + (res.hasCover ? (prices.lamination[cfg.coverLamKey] ? prices.lamination[cfg.coverLamKey].name : 'Без ламінації') : (prices.lamination[cfg.laminationKey] ? prices.lamination[cfg.laminationKey].name : 'Без ламінації')) +
-        '\nПостдрук: ' + (finNamesNow().length ? finNamesNow().join(', ') : '—') + ' (включення блока 500 ₴/операція)' +
-        '\nДопечатна підготовка макету: ' + formatUAH(res.prepressCost) +
+        '\nПостдрук: ' + (finNamesNow().length ? finNamesNow().join(', ') : '—') +
+        '\nМакетування: +' +
         '\nЦіна за 1 шт: ' + formatUAH(res.unit) +
         '\nРАЗОМ: ' + formatUAH(res.total);
+    }
+
+    /* ==== TASK 19: «Про виріб» — великий опис (опиши все) ==== */
+    const FORMAT_NAMES_S = { '105x148': 'А6', '148x105': 'А6 (альбомна)', '148x210': 'А5', '210x148': 'А5 (альбомна)', '210x297': 'А4', '297x210': 'А4 (альбомна)', '297x420': 'А3', '420x297': 'А3 (альбомна)' };
+    const CATEGORY_STORY = {
+      polygraphy: 'Візитки та ділова поліграфія — найважливіший носій вашого бренду: візитка часто перше, що тримає в руках клієнт. Щільний картон 300–350 г/м², рівний крій і насичений CMYK працюють на репутацію. Преміум-варіанти — Soft-Touch-ламінація, скруглені кути або візитка зі згином.',
+      advertising: 'Рекламна поліграфія — усе, що продає: флаєри, купони, квитки, воблери, шельтхалтери, тейбл-тенти. Такі вироби працюють масово, тому ми розкладаємо їх на аркуші А3 максимально щільно: чим більше виробів виходить з аркуша, тим дешевша кожна штука.',
+      stickers: 'Нахлейки та етикетки друкуються на двох самоклейних матеріалах: папір Raflatac — для сухих приміщень (ціновники, маркування, стікерпаки) і плівка Оракал (вініл) — для вулиці, вологи, авто та вітрин (−20…+60 °C). Форма будь-яка — плотерна висічка ріже за контуром.',
+      posters: 'Постери та афіші — повнокольоровий друк зображень на щільному папері. Яскравість дає CMYK-друк, а щільний папір 170–200 г/м² тримає форму на стіні, у рамі або на стенді. Для фотодруку і плакатів великого формату — той самий аркуш А3.',
+      booklets: 'Буклети та багатосторінкові видання друкуються блоком на аркушах А3: сторінки-полоси розкладаються так, щоб після фальцювання та підрізання вийшов готовий буклет. Скріплення — скоба (до 64 сторінок) або пружина КБС; обкладинка — самокришка або окремий щільніший аркуш з ламінацією.',
+      office: 'Офісна документація — бланки, конверти, грамоти, презентації, меню, папки та блокноти у фірмовому стилі. Ці вироби перевидрукуються найчастіше, тому великі тиражі з тиражною знижкою виходять максимально дешево.',
+      gifts: 'Подарунки та календарі — листівки, запрошення, настільні й настінні календарі, планінги, сувеніри. Такі вироби бачать щодня: календар тримає бренд перед очима клієнта цілий рік, а листівка — найдешевший теплий жест для клієнтів.',
+      merch: 'Мерч з логотипом — готові вироби (одяг, аксесуари), на які наносимо ваш логотип DTF-принтом або термоперенесенням. Принт стійкий до прання й носіння. Формула проста: ціна за штуку × тираж + разове макетування логотипа (+).',
+      packages: 'Готові пакунки — скомплектовані набори поліграфії для бізнесу: усе потрібне одним замовленням зі знижкою ~10%. Склад пакунка можна редагувати, макетування всіх макетів і постдрук уже включені у ціну.'
+    };
+    const COLOR_STORY = {
+      '1+0': 'односторонній чорно-білий друк — найекономніший варіант для бланків, чек-листів та внутрішніх документів',
+      '1+1': 'чорно-білий з двох сторін — для бланків, методичок та ч/б буклетів',
+      '4+0': 'повнокольоровий CMYK з одного боку — яскраві флаєри, афіші та листівки з фото',
+      '4+4': 'повнокольоровий CMYK з двох сторін — повноцінна рекламна продукція з фото з обох боків'
+    };
+    const PAPER_STORY = {
+      offset_80: 'тонкий офсетний папір — для блоків, бланків і великих тиражів; легко згинається, можна писати ручкою',
+      coated_115: 'тонкий крейдований — для вкладишів та економ-флаєрів',
+      coated_130: 'найпопулярніший папір для флаєрів і буклетів — щільний, але гнеться без біговки',
+      coated_150: 'щільніший — для багатосторінкових блоків і солідніших флаєрів',
+      coated_170: 'щільний — для постерів і преміум-флаєрів, добре тримає форму',
+      coated_200: 'товстий картон — меню, папки, обкладинки',
+      coated_250: 'товстий картон для візиток та листівок',
+      coated_300: 'щільний картон для візиток, грамот і обкладинок',
+      coated_350: 'преміум-картон — візитки business-class, бірки, грамоти',
+      kraft_200: 'бурий крафт — екостиль для меню, тегів і пакувальних вкладишів',
+      design_300: 'дизайнерський картон із фактурою — преміум-візитки, запрошення, сертифікати',
+      selfadhesive_paper: 'самоклейний папір Raflatac — стікери та етикетки для сухих приміщень: ціновники, маркування, стікерпаки',
+      selfadhesive_vinyl: 'плівка Оракал (вініл) — стійка до вологи та вулиці (−20…+60 °C): наліпки на авто, вітрини, тару'
+    };
+    const LAM_STORY = {
+      matte_10: 'матова плівка з одного боку — оксамитовий вигляд без блиску',
+      matte_11: 'матова з двох сторін — стриманий преміум',
+      gloss_10: 'глянцева з одного боку — соковиті кольори та яскравий блиск',
+      gloss_11: 'глянцева з двох сторін — максимум яскравості',
+      softtouch_10: 'Soft-Touch — «замша» на дотик, преміум-ефект для візиток і обкладинок',
+      softtouch_11: 'Soft-Touch з двох сторін — максимальний преміум'
+    };
+    const FINISH_STORY = {
+      scoring: 'біговка — канавка для рівного згину щільного паперу (фарба не тріскається)',
+      folding: 'фальцювання — акуратні згини для флаєрів, меню і буклетів',
+      corners: 'скруглення кутів — фірмовий прийом для візиток і карток',
+      hole: 'свердління отвору — під шнур, кільце чи вішання на стенд',
+      staples: 'скоби — скріплення видань до 64 сторінок',
+      spring: 'пружина КБС — розгортається на 360°, для брошур, календарів, блокнотів',
+      plotter: 'плотерна висічка — вирізання наліпок за будь-яким контуром',
+      perforation: 'перфорація — лінія відриву для купонів і квитків'
+    };
+    function productStoryRowsS(res) {
+      const kind = currentProductKind();
+      const rows = [];
+      const cat = cfg.product ? cfg.product.category : 'polygraphy';
+      const catMeta = CATEGORY_META.find(c => c.key === cat);
+      rows.push(['Що це:', CATEGORY_STORY[cat] || (catMeta ? catMeta.desc : 'Друкарський виріб на офсетній машині А3.')]);
+      if (kind === 'merch') {
+        rows.push(['Виріб:', (cfg.product ? cfg.product.name : 'Мерч') + ' — готовий виріб з вашим логотипом']);
+        rows.push(['Нанесення:', (cfg.product.applyMethod || 'друк лого') + ' — принт стійкий до прання та носіння']);
+        rows.push(['Розміри:', 'одяг S–3XL, кольори виробів — на вибір (вкажіть у коментарі до заявки)']);
+        rows.push(['Формула:', 'тираж × ' + cfg.product.unitPrice + ' ₴/шт + макетування (+) — разово на замовлення']);
+      } else if (kind === 'package') {
+        rows.push(['Виріб:', (cfg.product ? cfg.product.name : 'Пакунок') + ' — готовий набір «під ключ»']);
+        const items = cfg.pkgItems || (cfg.product ? cfg.product.items : []) || [];
+        rows.push(['Склад:', items.map(it => { const cp = productsCatalog.find(x => x.id === it.id); return (cp ? cp.name : it.id) + ' — ' + it.qty + ' шт'; }).join('; ')]);
+        rows.push(['Вигода:', '−10% комплект-знижка; макетування всіх макетів і постдрук уже включені (+)']);
+      } else {
+        const fmtName = FORMAT_NAMES_S[cfg.width + 'x' + cfg.height];
+        rows.push(['Формат:', cfg.width + ' × ' + cfg.height + ' мм' + (fmtName ? ' (' + fmtName + ')' : ' — власний формат під ваш дизайн') + '. Розкладка на аркуші А3: ' + res.layout.count + ' шт. з урахуванням виліжування 2 мм']);
+        rows.push(['Друк:', cfg.color + ' — ' + (COLOR_STORY[cfg.color] || 'офсетний друк CMYK') + ' на аркуші 297×420 мм']);
+        rows.push(['Папір:', (prices.paper[cfg.paperKey] ? prices.paper[cfg.paperKey].name : cfg.paperKey) + ' — ' + (PAPER_STORY[cfg.paperKey] || 'якісний друкарський папір')]);
+        if (res.isMultipage) {
+          rows.push(['Видання:', res.pages + ' сторінок (' + res.sheetsPerCopy + ' арк. А3 на 1 примірник)' + (res.hasCover ? ' + окрема обкладинка (' + (prices.paper[cfg.coverPaperKey] ? prices.paper[cfg.coverPaperKey].name : '') + ')' : ', самокришка')]);
+        }
+        const lamKey = res.hasCover ? cfg.coverLamKey : cfg.laminationKey;
+        if (lamKey !== 'none') {
+          rows.push(['Ламінація:', (prices.lamination[lamKey] ? prices.lamination[lamKey].name : '') + ' — ' + (LAM_STORY[lamKey] || 'захисна плівка, продовжує життя друку')]);
+        }
+        const finKeys = ['scoring','folding','corners','hole','staples','spring','plotter','perforation'];
+      const finList = finKeys.filter(k => cfg.finishing && cfg.finishing[k]);
+        rows.push(['Постдрук:', finList.length ? finList.map(k => FINISH_STORY[k] || (prices.finishing[k] ? prices.finishing[k].name : k)).join('; ') : 'без постобробки — можна додати в параметрах вище (згини, кути, отвір, скріплення)']);
+      }
+      rows.push(['Терміни:', 'стандарт — 1–2 робочі дні з моменту погодження макета; термінові тиражі — від 4 годин (вкажіть у коментарі)']);
+      if (kind === 'print') {
+        rows.push(['Технологія:', 'офсетний друк А3: ' + res.itemsPerSheet + ' шт. на аркуші, корисна площа ' + res.wastePercent + '% (мін. обрізки); тиражні знижки — чим більший тираж, тим дешевша кожна штука (до 1000 шт., флаєри та листівки — до 2500)']);
+      }
+      rows.push(['Макет:', 'PDF/X-1a або TIFF 300 dpi, CMYK, виліжування 2–3 мм, шрифти в кривих. Немає готового макета — зробимо макетування (+): перевіримо файл, розкладемо спускополоси, приведемо кольори. Потрібен дизайн — додайте нотатку в коментар до заявки.']);
+      return rows;
+    }
+    function renderProdStory(res) {
+      const box = document.getElementById('prodStory');
+      if (!box) return;
+      const rows = productStoryRowsS(res);
+      box.innerHTML = '<div class="prod-story-title">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>' +
+        'Опис виробу — все про ваш вибір</div>' +
+        rows.map(r => '<div class="prod-story-row"><span class="prod-story-k">' + r[0] + '</span><span class="prod-story-v">' + r[1] + '</span></div>').join('');
     }
     function renderPcSpec() {
       const box = document.getElementById('pcSpec');
@@ -4573,14 +4811,14 @@
         push('Спосіб нанесення:', cfg.product.applyMethod || 'друк лого');
         push('Базова ціна:', cfg.product.unitPrice + ' ₴/шт');
         push('Тираж:', cfg.quantity + ' шт.');
-        push('Допечатна підготовка лого:', formatUAH(res.prepressCost));
+        push('Макетування лого:', '+');
       } else if (kind === 'package') {
         push('Тираж:', cfg.quantity + ' компл.');
         (cfg.pkgItems || (cfg.product ? cfg.product.items : []) || []).forEach(it => {
           const cp = productsCatalog.find(x => x.id === it.id);
           push('Склад:', (cp ? cp.name : it.id) + ' — ' + it.qty * cfg.quantity + ' шт');
         });
-        push('Комплект-знижка:', '−10% · препресс і постдрук включені');
+        push('Комплект-знижка:', '−10% · макетування і постдрук включені (+)');
       } else {
         push('Тираж:', cfg.quantity + ' шт. · ' + (res.hasCover ? (res.blockSheets + ' + ' + res.coverSheets) : res.sheetsNeeded) + ' арк. А3');
         if (res.isMultipage) push('Сторінок:', res.pages + ' (' + res.sheetsPerCopy + ' А3/прим.)');
@@ -4589,7 +4827,7 @@
         push('Ламінація:', res.hasCover ? (prices.lamination[cfg.coverLamKey] ? prices.lamination[cfg.coverLamKey].name : 'Без ламінації') : (prices.lamination[cfg.laminationKey] ? prices.lamination[cfg.laminationKey].name : 'Без ламінації'));
         const fn = finNamesNow();
         push('Постдрук:', fn.length ? fn.join(', ') : '—');
-        push('Допечатна підготовка макету:', formatUAH(res.prepressCost));
+        push('Макетування:', '+');
       }
       box.innerHTML = '<div class="pc-spec-head"><span class="pc-spec-code">' + productCodeOf(cfg.product) + '</span>' +
         '<span class="pc-spec-name">' + calcProductNameS(cfg) + '</span></div>' +
@@ -4931,11 +5169,11 @@
       if (!p) return 'Зараз обрано власний формат.';
       if (p.kind === 'merch') {
         const r = calcAnyProduct(p, cfg.quantity);
-        return 'Поточний розрахунок (мерч):\n' + productNo(p) + ' ' + p.name + ' — ' + cfg.quantity + ' шт\n' + p.unitPrice + ' ₴/шт × ' + cfg.quantity + ' + 500 ₴ макет = ' + formatUAH(r.total) + ' (≈ ' + formatUAH(r.unit) + '/шт)\nГотові замовляти? Тисніть «Замовити за цією ціною».';
+        return 'Поточний розрахунок (мерч):\n' + productNo(p) + ' ' + p.name + ' — ' + cfg.quantity + ' шт\n' + p.unitPrice + ' ₴/шт × ' + cfg.quantity + ' + макетування (+) = ' + formatUAH(r.total) + ' (≈ ' + formatUAH(r.unit) + '/шт)\nГотові замовляти? Тисніть «Замовити за цією ціною».';
       }
       if (p.kind === 'package') {
         const r = calcAnyProduct(p, cfg.quantity);
-        return 'Поточний пакунок:\n' + productNo(p) + ' ' + p.name + '\n' + cfg.quantity + ' компл. × ' + formatUAH(r.pkgUnit) + ' = ' + formatUAH(r.total) + '\nРахуємо комплектами: у наборі ' + (p.contents || []).length + ' позиції, кожна отримує тиражну знижку; препресс включений.\nЗамовити — кнопка «Замовити за цією ціною».';
+        return 'Поточний пакунок:\n' + productNo(p) + ' ' + p.name + '\n' + cfg.quantity + ' компл. × ' + formatUAH(r.pkgUnit) + ' = ' + formatUAH(r.total) + '\nРахуємо комплектами: у наборі ' + (p.contents || []).length + ' позиції, кожна отримує тиражну знижку; макетування включено (+).\nЗамовити — кнопка «Замовити за цією ціною».';
       }
       const r = calcAnyProduct(p, cfg.quantity);
       return 'Поточний розрахунок:\n' + productNo(p) + ' ' + p.name + ' (' + cfg.width + '×' + cfg.height + ' мм' + (r.isMultipage ? ', ' + r.pages + ' стор.' : '') + ')\nТираж: ' + cfg.quantity + ' шт • Аркушів А3: ' + r.blockSheets + (r.hasCover ? ' + ' + r.coverSheets + ' обкладинка' : '') + '\nРазом: ' + formatUAH(r.total) + ' (≈ ' + formatUAH(r.unit) + '/шт)\nГотові замовляти? Тисніть «Замовити за цією ціною» — лист одразу піде на ' + ORDER_EMAIL + '.';
@@ -4952,14 +5190,14 @@
     ];
 
     const AI_SCENARIOS = [
-      { label: 'Як порахувати', words: ['порахув', 'розрахун', 'как посчитать', 'цін', 'вартост', 'скільки коштує', 'коштує', 'калькулятор'], text: 'Розрахунок займає 10 секунд:\n1. Оберіть виріб у каталозі — ' + AI_TOTAL + ' виробів, у кожного свій номер №001–№' + String(AI_TOTAL).padStart(3, '0') + '.\n2. Задайте формат, тираж і кольоровість (1+0 … 4+4).\n3. Оберіть папір; за потреби — ламінацію та постдрук.\nЦіна оновлюється миттєво. Усе рахується від аркуша А3; цифровий друк — до 1000 шт, а флаєри та листівки — до 2500.\nДля мерчу калькулятор інший: тираж × ціна/шт + 500 ₴ макет. Для пакунків — фіксована ціна комплекту.' },
+      { label: 'Як порахувати', words: ['порахув', 'розрахун', 'как посчитать', 'цін', 'вартост', 'скільки коштує', 'коштує', 'калькулятор'], text: 'Розрахунок займає 10 секунд:\n1. Оберіть виріб у каталозі — ' + AI_TOTAL + ' виробів, у кожного свій номер №001–№' + String(AI_TOTAL).padStart(3, '0') + '.\n2. Задайте формат, тираж і кольоровість (1+0 … 4+4).\n3. Оберіть папір; за потреби — ламінацію та постдрук.\nЦіна оновлюється миттєво. Усе рахується від аркуша А3; цифровий друк — до 1000 шт, а флаєри та листівки — до 2500.\nДля мерчу калькулятор інший: тираж × ціна/шт + макетування (+). Для пакунків — фіксована ціна комплекту.' },
       { label: '🔥 Акції', words: ['акці', 'акци', 'знижк', 'скидк', 'промо', 'акция', 'розпродаж'], dynamic: aiPromosText },
       { label: '📰 Новини', words: ['новин', 'новост'], text: '⏳ Запитую свіжі новини поліграфічного ринку…' },
-      { label: '📐 Макет', words: ['макет', 'файл', 'виліж', 'вылет', 'pdf', 'роздільн', 'dpi', 'cmyk', 'шрифт', 'розширення'], text: 'Вимоги до макету — щоб друк вийшов чітким:\n• Формат файлу: PDF/X-1a (найкраще), TIFF 300 dpi або CDR/AI (скеруйте в PDF).\n• Виліжування: 2–3 мм з кожного боку; важливі елементи — не ближче 4 мм до краю.\n• Роздільна здатність растру — 300 dpi у масштабі 1:1 (не скріншоти з інтернету).\n• Кольори: CMYK; чорний текст — 100% K; дрібний текст — від 6 pt.\n• Шрифти — у криві; лінії — не тонші за 0,25 pt.\nМакету немає? Допечатна підготовка — 500 ₴: перевірю файл, зроблю спускополоси та приведу кольори. Або замовте дизайн — додайте нотатку в коментар до заявки.' },
+      { label: '📐 Макет', words: ['макет', 'файл', 'виліж', 'вылет', 'pdf', 'роздільн', 'dpi', 'cmyk', 'шрифт', 'розширення'], text: 'Вимоги до макету — щоб друк вийшов чітким:\n• Формат файлу: PDF/X-1a (найкраще), TIFF 300 dpi або CDR/AI (скеруйте в PDF).\n• Виліжування: 2–3 мм з кожного боку; важливі елементи — не ближче 4 мм до краю.\n• Роздільна здатність растру — 300 dpi у масштабі 1:1 (не скріншоти з інтернету).\n• Кольори: CMYK; чорний текст — 100% K; дрібний текст — від 6 pt.\n• Шрифти — у криві; лінії — не тонші за 0,25 pt.\nМакету немає? Зробимо макетування (+ у кожному замовленні): перевірю файл, зроблю спускополоси та приведу кольори. Або замовте дизайн — додайте нотатку в коментар до заявки.' },
       { label: '🗂 Матеріали', words: ['папір', 'папер', 'щільн', 'матеріал', 'картон', 'крейдов', 'мелован', 'крафт', 'вініл', 'самокле', 'плотность'], text: 'Папір і матеріали — що для чого:\n• 80 г/м² офсетний — бланки, блоки видань, щоденники: економ і зручність письма.\n• 115–170 г крейдований — флаєри, буклети, постери: яскравий насичений друк.\n• 200–250 г — меню, сертифікати, обкладинки, листівки преміум.\n• 300–350 г картон — візитки, тейбл-тенти, бірки; з ламінацією — максимум презентабельності.\n• Самоклеючі: папір (сухі приміщення), вініл (волога, вулиця, −20…+60 °C), перфорований вініл (вітрини, скло).\n• Крафт і дизайнерські папери — еко-стиль, пакування, преміум-подарунки.\nЦіна паперу додається за кожен аркуш А3 (+1,2…+18 ₴). У видань блок і обкладинка обираються окремо — підкажу комбінацію під ваш бюджет.' },
       { label: 'Видання (до 1000)', words: ['сторінк', 'багатостор', 'брошур', 'книг', 'катал', 'блокнот', 'календар', 'планінг', 'кубарик'], text: 'Брошури, каталоги, блокноти й календарі рахуються за власною логікою:\n• Аркушів А3 на 1 примірник = сторінки ÷ (полос на аркуші × сторони друку). Наприклад, брошура А5 8 стор. при 4+4 — це 1 арк. А3 на примірник.\n• Обкладинка друкується окремо на щільному папері (розгортка 2×Ш×В), її можна ламінувати.\n• Крок сторінок: скоба — 4 полоси, пружина — 2.\nВажливо: цифровий друк рахується до 1000 примірників (флаєри та листівки — до 2500). Понад — офсетний друк, у калькуляторі він не рахується. Для великих накладів телефонуйте ' + AI_OFFSET_PHONE + '.' },
       { label: 'Постдрук 500+', words: ['ламин', 'ламінац', 'свердлін', 'фальц', 'бігов', 'пружин', 'скоб', 'плотер', 'перфорац', 'скруглен', 'отвор', 'постдрук'], text: 'Ламінація та постдрукарська обробка = включення блока 500 ₴ + ціна за одиницю.\nНаприклад, свердління отвору: 500 ₴ + 2,50 ₴/шт → для тиражу 100 шт це 750 ₴.\nОперації: ' + aiFinList() + '.\nЛамінація: 500 ₴ + ' + aiLamRange() + ' ₴ за аркуш А3 (матова, глянцева, soft-touch).\nУ видань з обкладинкою ламінується саме обкладинка, а постдрук рахується по готових примірниках.' },
-      { label: 'Допечатна 500 ₴', words: ['допечат', 'підготов', 'препресс', 'дизайнер'], text: 'У кожному розрахунку закладена допечатна підготовка макету — 500 ₴ фіксовано.\nСюди входить перевірка макету, спускополоси, приведення кольорів до вимог друкарні. Це разова вартість на замовлення і вона не залежить від тиражу.\nЯкщо готового макету немає — наш дизайнер його підготує: додайте нотатку у коментар до замовлення.' },
+      { label: '📐 Макетування +', words: ['макетуван', 'допечат', 'підготов', 'препресс', 'дизайнер'], text: 'У кожному розрахунку стоїть рядок «Макетування: +» — це підготовка вашого макету до друку.\nСюди входить перевірка файлу, спускополоси, приведення кольорів до вимог друкарні. «+» — це разовий фіксований вклад у замовлення: він не залежить від тиражу й не множиться.\nЯкщо готового макету немає — наш дизайнер його підготує: додайте нотатку у коментар до замовлення.' },
       { label: 'Офсет 1000+', words: ['офсет', 'понад 1000', '1000+', 'більше 1000', 'понад 2500'], text: 'Цифровий друк у калькуляторі рахується до 1000 шт — флаєри та листівки навіть до 2500 шт. Понад ці ліміти продукція друкується офсетним способом — на великих накладах це вигідніше за цифру.\nУ калькуляторі такі тиражі не рахуються.\nДля офсетного прорахунку телефонуйте ' + AI_OFFSET_PHONE + ' або залиште заявку через «Замовити» — менеджер підготує індивідуальну пропозицію.' },
       { label: 'Мій розрахунок', words: ['мій розрахунок', 'мой расчет', 'поточний'], dynamic: aiCurrentCalcText },
       { label: 'Як замовити?', words: ['замовл', 'купити', 'оформит', 'оплат', 'заказ'], text: 'Все просто:\n1. Натисніть «Замовити за цією ціною» (під розрахунком або в шапці сайту).\n2. Заповніть ім\'я та телефон — можна додати коментар.\n3. Натисніть «Підтвердити та відправити».\nЛист замовлення автоматично відправляється на ' + ORDER_EMAIL + ' без жодних переходів, а ви одразу отримуєте номер заявки. Менеджер передзвонить для підтвердження.' },
@@ -4967,9 +5205,9 @@
       { label: '🖨 Друк', words: ['кольоров', 'цветность', '4+0', '4+4', '1+0', '1+1', 'цифров', 'друк', 'печать', 'друкуєт', 'яким друком', 'технологія друку'], text: 'Технологія друку в ALFAMEDIA:\n• Цифровий друк А3 (297×420) — тиражі до 1000 шт (флаєри та листівки — до 2500): швидко, без друкарських форм, стабільна якість.\n• Кольоровість: 4+0 (одна сторона), 4+1 (зворот ч/б), 4+4 (повна двостороння); 1+0/1+1 — економ-варіант для бланків.\n• Білий тонер — для вінілу та прозорих матеріалів (нахлейки на скло, авто).\n• Більші тиражі — офсетна машина (окремий прорахунок, ' + AI_OFFSET_PHONE + ').\n• Кольорокорекція за макетом CMYK; Pantone — узгоджується індивідуально менеджером.' },
       { label: '🎓 Цікаве про друк', words: ['цікав', 'факт', 'істор', 'реам', 'навіщо'], text: '🎓 Кілька фактів, які мало хто знає про друк:\n• Перша друкарня на українських землях — Львів, 1573 рік: Іван Федорович видав «Апостол». Типографська справа в нас має 450+ років історії.\n• Всього 4 фарби (CMYK) дають мільйони відтінків — людське око розрізняє близько 10 мільйонів кольорів.\n• Аркуш А0 — рівно 1 м². Кожен наступний формат вдвічі менший: А4 — це половина А3. Саме тому калькулятор рахує від аркушів А3.\n• «Реам» — пачка з 500 аркушів. Звідси і звичні тиражі 500/1000 шт — вони кратні паперовим пачкам.\n• Ламінація — не лише краса: плівка подовжує життя поліграфії у 3–5 разів і захищає від вологи.\n• Паперове волокно витримує 5–7 циклів переробки — тому картон з макулатури щільний і міцний.\nХочете ще? Питайте про формати, словник термінів чи як зекономити — я завжди «в темі».' },
       { label: '📏 Формати паперу', words: ['формат', 'sra', 'розміри аркуш', 'а-формат'], text: '📏 Система форматів А — проста математика:\n• А0 (841×1189 мм) — рівно 1 м² паперу.\n• Кожен наступний — половина попереднього: А1 → А2 (420×594) → А3 (297×420) → А4 (210×297) → А5 (148×210) → А6 (105×148).\n• А3 вміщує 2×А4 — тому друк двох А4 на одному аркуші А3 помітно дешевший за штуку.\n• Візитка 90×50 — на А3 поміщається 12 шт, флаєр А6 — 8 шт, листівка А5 — 4 шт.\n• SRA3 (320×450) — технологічний формат із запасом під виліжування: саме він закладений у прорахунок друкарні.\nУ калькуляторі обирайте А6–А3 або «Свій розмір» — я автоматично переведу все в потрібні аркуші А3.' },
-      { label: '📚 Словник друкарні', words: ['словник', 'термін', 'що таке', 'значення'], text: '📚 Міні-словник друкарні — говоріть з нами однією мовою:\n• Фальц — згин аркуша (флаєри, меню, листівки).\n• Біговка — канавка на щільному папері, щоб згин був рівним і фарба не тріскалась.\n• Виліжування — запас 2–3 мм за межами крою, щоб не було білих смуг.\n• Спускополоси — точна розстановка сторінок на друкарському аркуші (їх роблять у допечатній підготовці).\n• Растр — мікроточки, з яких складається зображення; 300 dpi — стандарт чіткості.\n• Креш — розрізання аркуша на готові вироби.\n• Тиснення — рельєфний відбиток фольгою для преміум-вигляду.\n• Скоба, пружина (КБС), клей — способи скріплення багатосторінкових видань.\nПитайте «що таке …» про будь-який термін — поясню просто й з прикладами.' },
+      { label: '📚 Словник друкарні', words: ['словник', 'термін', 'що таке', 'значення'], text: '📚 Міні-словник друкарні — говоріть з нами однією мовою:\n• Фальц — згин аркуша (флаєри, меню, листівки).\n• Біговка — канавка на щільному папері, щоб згин був рівним і фарба не тріскалась.\n• Виліжування — запас 2–3 мм за межами крою, щоб не було білих смуг.\n• Спускополоси — точна розстановка сторінок на друкарському аркуші (їх роблять під час макетування).\n• Растр — мікроточки, з яких складається зображення; 300 dpi — стандарт чіткості.\n• Креш — розрізання аркуша на готові вироби.\n• Тиснення — рельєфний відбиток фольгою для преміум-вигляду.\n• Скоба, пружина (КБС), клей — способи скріплення багатосторінкових видань.\nПитайте «що таке …» про будь-який термін — поясню просто й з прикладами.' },
       { label: '💡 Як зекономити', words: ['економ', 'зеконом', 'дешев', 'здешев', 'бюджет', 'оптиміз'], text: '💡 6 перевірених способів платити менше без втрати якості:\n1. Тираж вище — ціна/шт нижча. 100 шт завжди вигідніші за 25: змініть тираж у калькуляторі — різниця до 2×.\n2. Друк парами: 2×А4 на аркуші А3, 8×А6 на А3 — розумне розкладання економить аркуші.\n3. Кольоровість: для внутрішніх документів 1+1 замість 4+4 — різниця суттєва.\n4. Папір: 115–130 г для флаєрів майже не відрізняється на вигляд від 170 г, а коштує менше.\n5. Ламінація — тільки на обкладинку видання, а не на весь блок.\n6. Пакунки: комплект дешевший за ті самі позиції окремо (СТАРТ 4140 ₴ — це ≈ −10% від суми).\nСкажіть свій бюджет — підберу формат, папір і тираж під нього.' },
-      { label: '🤖 Про себе', words: ['хто ти', 'про себе', 'що вмієш', 'вмієш', 'хто такий', 'лаборант', 'ти бот', 'ви бот', 'штучний інтелект', 'розкажи про'], text: '🤖 Я — Лаборант 3, AI-дослідник і помічник друкарні ALFAMEDIA (alfa.copy.print).\nМоя база — ' + AI_TOTAL + ' виробів із номерами №001–№' + String(AI_TOTAL).padStart(3, '0') + ': пам\'ятаю кожен виріб, його формати, папір і ціну.\nЩо вмію:\n• знайти виріб за номером або назвою і показати карточку з ціною\n• одразу обрати його в калькуляторі, задати тираж і порахувати вартість\n• пояснити логіку: постдрук «500 ₴ + ціна/одиницю», допечатна 500 ₴, офсет 1000+\n• підказати вимоги до макету, обрати папір, розповісти про друк\n• показати акції дня (−5–10%) та свіжі новини поліграфічного ринку\n• відкрити форму замовлення — лист піде на ' + ORDER_EMAIL + ' без жодних переходів\nПишіть номером чи словом — я завжди на зв\'язку.' }
+      { label: '🤖 Про себе', words: ['хто ти', 'про себе', 'що вмієш', 'вмієш', 'хто такий', 'лаборант', 'ти бот', 'ви бот', 'штучний інтелект', 'розкажи про'], text: '🤖 Я — Лаборант 3, AI-дослідник і помічник друкарні ALFAMEDIA (alfa.copy.print).\nМоя база — ' + AI_TOTAL + ' виробів із номерами №001–№' + String(AI_TOTAL).padStart(3, '0') + ': пам\'ятаю кожен виріб, його формати, папір і ціну.\nЩо вмію:\n• знайти виріб за номером або назвою і показати карточку з ціною\n• одразу обрати його в калькуляторі, задати тираж і порахувати вартість\n• пояснити логіку: постдрук «500 ₴ + ціна/одиницю», макетування (+), офсет 1000+\n• підказати вимоги до макету, обрати папір, розповісти про друк\n• показати акції дня (−5–10%) та свіжі новини поліграфічного ринку\n• відкрити форму замовлення — лист піде на ' + ORDER_EMAIL + ' без жодних переходів\nПишіть номером чи словом — я завжди на зв\'язку.' }
     ];
 
     const AI_CAT_WORDS = {
@@ -5018,8 +5256,8 @@
       const lines = [meta.icon + ' ' + meta.label + ' — ' + list.length + ' виробів (' + aiCatRange(catKey) + '):'];
       shown.forEach(p => lines.push(aiProductLine(p)));
       if (rest > 0) lines.push('…та ще ' + rest + '. Усі номери — у каталозі або в базі «База всіх виробів».');
-      if (catKey === 'merch') lines.push('Логіка мерчу: тираж × ціна/шт + 500 ₴ допечатна підготовка макету лого (разово на замовлення).');
-      if (catKey === 'packages') lines.push('Пакунки рахуємо комплектами: 1 комплект = повний набір виробів зі знижкою −10%; препресс усіх макетів уже включений. Замовите більше комплектів — кожен виріб отримає тиражну знижку, тож комплект дешевшає.');
+      if (catKey === 'merch') lines.push('Логіка мерчу: тираж × ціна/шт + макетування (+) — разово на замовлення.');
+      if (catKey === 'packages') lines.push('Пакунки рахуємо комплектами: 1 комплект = повний набір виробів зі знижкою −10%; макетування всіх макетів уже включено (+). Замовите більше комплектів — кожен виріб отримає тиражну знижку, тож комплект дешевшає.');
       lines.push('Напишіть номер виробу (напр. «' + productNo(list[0]) + '») — покажу карточку або одразу оберу в калькуляторі.');
       const hints = shown.slice(0, 2).map(p => ({ label: productNo(p) + ' — ' + p.name, q: productNo(p) }));
       return { text: lines.join('\n'), hints };
@@ -5035,7 +5273,7 @@
       if (t.label === 'Як замовити?') return [{ label: '✉️ Відкрити форму замовлення', action: 'order' }];
       if (t.label === 'Мій розрахунок') return [{ label: '✉️ Замовити цей варіант', action: 'order' }];
       if (t.label === '🔥 Акції') return aiDailyPromos().map(x => ({ label: '→ Обрати ' + productNo(x.p) + ' (−' + x.d + '%)', action: 'select', productId: x.p.id }));
-      if (t.label === '📐 Макет') return [{ label: '📐 Допечатна підготовка', q: 'допечатна' }, { label: '✉️ Як замовити?', q: 'як замовити' }];
+      if (t.label === '📐 Макет') return [{ label: '📐 Макетування', q: 'макетування' }, { label: '✉️ Як замовити?', q: 'як замовити' }];
       if (t.label === '🗂 Матеріали') return [{ label: '📐 Макет', q: 'макет' }, { label: '🧰 Постдрук', q: 'постдрук' }];
       if (t.label === '🎓 Цікаве про друк') return [{ label: '📏 Формати паперу', q: 'формати паперу' }, { label: '📚 Словник друкарні', q: 'словник термінів' }];
       if (t.label === '📏 Формати паперу') return [{ label: '💡 Як зекономити', q: 'як зекономити' }, { label: '📐 Макет і виліжування', q: 'макет' }];
@@ -5052,7 +5290,7 @@
       if (/(обери|обрати|вибери|вибрати|постав|став|додай|в калькулятор)/.test(q)) {
         const p = aiFindProductByNumber(q) || aiFindProductByName(q);
         if (p) {
-          return { text: 'Готово! Обрав ' + productNo(p) + ' ' + p.name + ' — калькулятор у центрі, параметри та ціна перед очима.' + (p.kind === 'merch' ? '\nНагадаю: у мерчу калькулятор свій — тираж × ' + p.unitPrice + ' ₴ + 500 ₴ макет.' : '') + (p.kind === 'package' ? '\nЦе пакунок: рахуємо комплектами (кожен виріб у наборі × кількість компл., з тиражними знижками), препресс включений.' : ''), hints: [{ label: 'Мій розрахунок', q: 'мій розрахунок' }, { label: 'Як замовити?', q: 'як замовити' }], action: { type: 'select', productId: p.id } };
+          return { text: 'Готово! Обрав ' + productNo(p) + ' ' + p.name + ' — калькулятор у центрі, параметри та ціна перед очима.' + (p.kind === 'merch' ? '\nНагадаю: у мерчу калькулятор свій — тираж × ' + p.unitPrice + ' ₴ + макетування (+).' : '') + (p.kind === 'package' ? '\nЦе пакунок: рахуємо комплектами (кожен виріб у наборі × кількість компл., з тиражними знижками), макетування включено (+).' : ''), hints: [{ label: 'Мій розрахунок', q: 'мій розрахунок' }, { label: 'Як замовити?', q: 'як замовити' }], action: { type: 'select', productId: p.id } };
         }
       }
 
@@ -5113,7 +5351,7 @@
       if (/(привіт|вітаю|добрий|доброго|hello|hi|дякую|спасибо|подяк)/.test(q)) return { text: 'Взаємно! 😊 Чим допомогти? Можу показати виріб за номером, підказати ціну або одразу оформити замовлення.', hints: AI_WELCOME_HINTS };
 
       // 10. Fallback
-      return { text: 'Не впевнений, що зрозумів питання. Я вмію:\n• показувати виріб за номером — напишіть «№042»;\n• розповідати про категорії — «мерч», «пакунки», «візитки», «брошури»;\n• пояснювати розрахунок — постдрук «500 ₴ + ціна/одиницю», допечатна 500 ₴, офсет 1000+;\n• обирати виріб у калькуляторі та відкривати замовлення.', hints: AI_WELCOME_HINTS };
+      return { text: 'Не впевнений, що зрозумів питання. Я вмію:\n• показувати виріб за номером — напишіть «№042»;\n• розповідати про категорії — «мерч», «пакунки», «візитки», «брошури»;\n• пояснювати розрахунок — постдрук «500 ₴ + ціна/одиницю», макетування (+), офсет 1000+;\n• обирати виріб у калькуляторі та відкривати замовлення.', hints: AI_WELCOME_HINTS };
     }
 
     let aiOpen = false;
@@ -5190,7 +5428,7 @@
         selectFromDb(h.productId);
         const defQty = p.kind === 'package' ? 1 : Math.max(p.minQty, 1);
         setQty(defQty);
-        aiPushMsg('Готово: обрав ' + productNo(p) + ' ' + p.name + ' у калькуляторі, тираж ' + defQty + ' шт.' + (p.kind === 'merch' ? '\nМерч: тираж × ' + p.unitPrice + ' ₴/шт + 500 ₴ макет.' : ''), 'bot', { hints: [{ label: 'Мій розрахунок', q: 'мій розрахунок' }, { label: '✉️ Як замовити?', q: 'як замовити' }] });
+        aiPushMsg('Готово: обрав ' + productNo(p) + ' ' + p.name + ' у калькуляторі, тираж ' + defQty + ' шт.' + (p.kind === 'merch' ? '\nМерч: тираж × ' + p.unitPrice + ' ₴/шт + макетування (+).' : ''), 'bot', { hints: [{ label: 'Мій розрахунок', q: 'мій розрахунок' }, { label: '✉️ Як замовити?', q: 'як замовити' }] });
         return;
       }
     }
@@ -5666,7 +5904,7 @@
             table +
             '<div class="cp-terms">' +
               '<div class="cp-terms-title">Умови:</div>' +
-              '<div>• Ціни розраховано моделлю друку А3 alfa.copy.print; допечатна підготовка макету — 500 ₴ у кожному розрахунку.</div>' +
+              '<div>• Ціни розраховано моделлю друку А3 alfa.copy.print; макетування (+) входить у кожний розрахунок.</div>' +
               '<div>• Цифровий друк рахується до 1000 шт (флаєри та листівки — до 2500); більші тиражі — офсет, за окремим прорахунком.</div>' +
               '<div>• Пропозиція дійсна 14 календарних днів. Точний прорахунок підтвердить менеджер після перевірки макетів.</div>' +
               '<div class="cp-terms-contacts">☎ ' + CP_PHONE + ' · ✉ ' + CP_EMAIL + ' · друкарня ALFAMEDIA (alfa.copy.print)</div>' +
@@ -5679,7 +5917,3 @@
   </script>
 </body>
 </html>
-      merch: '#fb923c', packages: '#22d3ee'
-    };
-
-    function renderProductsList() {
